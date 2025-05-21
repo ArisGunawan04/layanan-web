@@ -4,10 +4,50 @@ import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const LoginContainer = styled.div`
   display: flex;
+  min-height: 100vh;
+  background-color: #f0f0f0; /* Warna latar belakang ringan */
+`;
+
+const LeftContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 40px; /* Space below header */
+`;
+
+const Logo = styled.img`
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+`;
+
+const AppName = styled.h2`
+  color: #333;
+  font-size: 24px;
+  font-weight: 700;
+`;
+
+const ImageContainer = styled.div`
+  flex: 0.5;
+  background-image: url('/asset/landing page animation.png');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+`;
+
+const FormContainer = styled.div`
+  flex: 1;
+  display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #6e8efb, #a777e3);
+  padding: 20px;
+  flex-grow: 1; /* Memungkinkan FormContainer mengambil sisa ruang */
 `;
 
 const LoginCard = styled.div`
@@ -152,47 +192,56 @@ const Login = () => {
 
   return (
     <LoginContainer>
-      <LoginCard>
-        <Title>Selamat Datang</Title>
-        <Form onSubmit={handleSubmit}>
-          <InputGroup>
-            <Icon>
-              <FaUser />
-            </Icon>
-            <Input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-            />
-          </InputGroup>
-          <InputGroup>
-            <Icon>
-              <FaLock />
-            </Icon>
-            <Input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-            <PasswordToggle onClick={togglePasswordVisibility}>
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </PasswordToggle>
-          </InputGroup>
-          <ForgotPassword>
-            <a href="#">Lupa password?</a>
-          </ForgotPassword>
-          <Button type="submit">Masuk</Button>
-        </Form>
-        <Register>
-          Belum punya akun? <a href="#">Daftar sekarang</a>
-        </Register>
-      </LoginCard>
+      <LeftContainer>
+        <Header>
+          <Logo src="/asset/logo.png" alt="ConnectHub Logo" /> {/* Ganti dengan path logo Anda */}
+          <AppName>ConnectHub</AppName>
+        </Header>
+        <FormContainer>
+          <LoginCard>
+            <Title>Masuk</Title>
+            <Form onSubmit={handleSubmit}>
+              <InputGroup>
+                <Icon>
+                  <FaUser />
+                </Icon>
+                <Input
+                  type="text"
+                  name="username"
+                  placeholder="Masukan email anda"
+                  value={formData.username}
+                  onChange={handleChange}
+                  required
+                />
+              </InputGroup>
+              <InputGroup>
+                <Icon>
+                  <FaLock />
+                </Icon>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Masukan kata sandi"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+                <PasswordToggle onClick={togglePasswordVisibility}>
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </PasswordToggle>
+              </InputGroup>
+              <ForgotPassword>
+                <a href="#">Lupa kata sandi?</a>
+              </ForgotPassword>
+              <Button type="submit">Log In</Button>
+            </Form>
+            <Register>
+              Belum punya akun? <a href="#">Daftar</a>
+            </Register>
+          </LoginCard>
+        </FormContainer>
+      </LeftContainer>
+      <ImageContainer />
     </LoginContainer>
   );
 };
