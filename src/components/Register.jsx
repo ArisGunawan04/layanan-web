@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { FaUser, FaLock, FaEnvelope, FaEye, FaEyeSlash } from 'react-icons/fa';
 
-const LoginContainer = styled.div`
+const RegisterContainer = styled.div`
   display: flex;
   min-height: 100vh;
   background-color: #f0f0f0; /* Warna latar belakang ringan */
@@ -51,7 +50,7 @@ const FormContainer = styled.div`
   flex-grow: 1; /* Memungkinkan FormContainer mengambil sisa ruang */
 `;
 
-const LoginCard = styled.div`
+const RegisterCard = styled.div`
   width: 400px;
   background-color: rgba(255, 255, 255, 0.9);
   border-radius: 20px;
@@ -133,22 +132,7 @@ const Button = styled.button`
   }
 `;
 
-const ForgotPassword = styled.div`
-  text-align: right;
-  margin: 10px 0 20px;
-  
-  a {
-    color: #6e8efb;
-    text-decoration: none;
-    font-size: 14px;
-    
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-const Register = styled.div`
+const LoginLink = styled.div`
   text-align: center;
   margin-top: 20px;
   font-size: 14px;
@@ -165,11 +149,13 @@ const Register = styled.div`
   }
 `;
 
-const Login = () => {
+const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
+    email: '',
+    password: '',
+    confirmPassword: '',
+    username: ''
   });
 
   const handleChange = (e) => {
@@ -182,8 +168,8 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Implementasi logika login di sini
-    console.log('Login dengan:', formData);
+    // Implementasi logika pendaftaran di sini
+    console.log('Mendaftar dengan:', formData);
     // Tambahkan logika autentikasi di sini
   };
 
@@ -192,25 +178,25 @@ const Login = () => {
   };
 
   return (
-    <LoginContainer>
+    <RegisterContainer>
       <LeftContainer>
         <Header>
           <Logo src="/asset/logo.png" alt="ConnectHub Logo" /> {/* Ganti dengan path logo Anda */}
           <AppName>ConnectHub</AppName>
         </Header>
         <FormContainer>
-          <LoginCard>
-            <Title>Masuk</Title>
+          <RegisterCard>
+            <Title>Daftar</Title>
             <Form onSubmit={handleSubmit}>
               <InputGroup>
                 <Icon>
-                  <FaUser />
+                  <FaEnvelope />
                 </Icon>
                 <Input
-                  type="text"
-                  name="username"
+                  type="email"
+                  name="email"
                   placeholder="Masukan email anda"
-                  value={formData.username}
+                  value={formData.email}
                   onChange={handleChange}
                   required
                 />
@@ -231,20 +217,46 @@ const Login = () => {
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </PasswordToggle>
               </InputGroup>
-              <ForgotPassword>
-                <a href="#">Lupa kata sandi?</a>
-              </ForgotPassword>
-              <Button type="submit">Log In</Button>
+              <InputGroup>
+                <Icon>
+                  <FaLock />
+                </Icon>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Konfirmasi kata sandi"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                />
+                <PasswordToggle onClick={togglePasswordVisibility}>
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </PasswordToggle>
+              </InputGroup>
+              <InputGroup>
+                <Icon>
+                  <FaUser />
+                </Icon>
+                <Input
+                  type="text"
+                  name="username"
+                  placeholder="Masukan nama pengguna"
+                  value={formData.username}
+                  onChange={handleChange}
+                  required
+                />
+              </InputGroup>
+              <Button type="submit">Daftar</Button>
             </Form>
-            <Register>
-              Belum punya akun? <Link to="/register">Daftar</Link>
-            </Register>
-          </LoginCard>
+            <LoginLink>
+              Sudah punya akun? <a href="#">Masuk</a>
+            </LoginLink>
+          </RegisterCard>
         </FormContainer>
       </LeftContainer>
       <ImageContainer />
-    </LoginContainer>
+    </RegisterContainer>
   );
 };
 
-export default Login;
+export default Register;
