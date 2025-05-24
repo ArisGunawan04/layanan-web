@@ -180,11 +180,30 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Implementasi logika login di sini
-    console.log('Login dengan:', formData);
-    // Tambahkan logika autentikasi di sini
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', { // Ganti URL jika backend berjalan di tempat lain
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Login berhasil:', data);
+        // Tambahkan logika setelah login berhasil, misalnya redirect atau simpan token
+      } else {
+        console.error('Login gagal:', data.message);
+        // Tampilkan pesan error kepada pengguna
+      }
+    } catch (error) {
+      console.error('Terjadi kesalahan saat login:', error);
+      // Tampilkan pesan error koneksi
+    }
   };
 
   const togglePasswordVisibility = () => {

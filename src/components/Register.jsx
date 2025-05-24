@@ -33,13 +33,7 @@ const AppName = styled.h2`
   font-weight: 700;
 `;
 
-const ImageContainer = styled.div`
-  flex: 0.5;
-  background-image: url('/asset/landing page animation.png');
-  background-size: cover;
-  background-position: center;
-  min-height: 100vh;
-`;
+
 
 const FormContainer = styled.div`
   flex: 1;
@@ -154,9 +148,11 @@ const Register = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
-    username: ''
+    username: '',
+    name: ''
   });
+  const [message, setMessage] = useState(''); // State baru untuk pesan notifikasi
+  const [isSuccess, setIsSuccess] = useState(null); // State baru untuk status respons (sukses/gagal)
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -166,11 +162,41 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage(''); // Bersihkan pesan sebelumnya
+    setIsSuccess(null); // Bersihkan status sebelumnya
     // Implementasi logika pendaftaran di sini
     console.log('Mendaftar dengan:', formData);
     // Tambahkan logika autentikasi di sini
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/register', { // Ganti URL jika backend berjalan di tempat lain
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log('Pendaftaran berhasil:', data);
+        setMessage('Pendaftaran berhasil!'); // Set pesan sukses
+        setIsSuccess(true); // Set status sukses
+        // Tambahkan logika setelah pendaftaran berhasil, misalnya redirect atau tampilkan pesan sukses
+      } else {
+        console.error('Pendaftaran gagal:', data.message);
+        setMessage(`Pendaftaran gagal: ${data.message}`); // Set pesan gagal
+        setIsSuccess(false); // Set status gagal
+        // Tampilkan pesan error kepada pengguna
+      }
+    } catch (error) {
+      console.error('Terjadi kesalahan saat pendaftaran:', error);
+      setMessage('Terjadi kesalahan saat pendaftaran. Silakan coba lagi.'); // Set pesan error koneksi
+      setIsSuccess(false); // Set status gagal karena error koneksi
+      // Tampilkan pesan error koneksi
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -188,6 +214,7 @@ const Register = () => {
           <RegisterCard>
             <Title>Daftar</Title>
             <Form onSubmit={handleSubmit}>
+              {message && <p style={{ textAlign: 'center', color: isSuccess === true ? 'green' : 'red' }}>{message}</p>} {/* Tampilkan pesan notifikasi berdasarkan status sukses/gagal */}
               <InputGroup>
                 <Icon>
                   <FaEnvelope />
@@ -246,6 +273,19 @@ const Register = () => {
                   required
                 />
               </InputGroup>
+              <InputGroup>
+                <Icon>
+                  <FaUser />
+                </Icon>
+                <Input
+                  type="text"
+                  name="name"
+                  placeholder="Masukan nama lengkap"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </InputGroup>
               <Button type="submit">Daftar</Button>
             </Form>
             <LoginLink>
@@ -254,7 +294,7 @@ const Register = () => {
           </RegisterCard>
         </FormContainer>
       </LeftContainer>
-      <ImageContainer />
+      {/* <ImageContainer /> */}
     </RegisterContainer>
   );
 };
