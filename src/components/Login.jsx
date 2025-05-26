@@ -168,7 +168,7 @@ const Register = styled.div`
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
 
@@ -195,10 +195,15 @@ const Login = () => {
 
       if (response.ok) {
         console.log('Login berhasil:', data);
-        // Tambahkan logika setelah login berhasil, misalnya redirect atau simpan token
+        // Simpan token dan data user ke localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Redirect ke halaman beranda
+        window.location.href = '/beranda';
       } else {
         console.error('Login gagal:', data.message);
-        // Tampilkan pesan error kepada pengguna
+        alert('Login gagal: ' + data.message);
       }
     } catch (error) {
       console.error('Terjadi kesalahan saat login:', error);
@@ -227,9 +232,9 @@ const Login = () => {
                 </Icon>
                 <Input
                   type="text"
-                  name="username"
+                  name="email"
                   placeholder="Masukan email anda"
-                  value={formData.username}
+                  value={formData.email}
                   onChange={handleChange}
                   required
                 />
@@ -251,7 +256,7 @@ const Login = () => {
                 </PasswordToggle>
               </InputGroup>
               <ForgotPassword>
-                <a href="#">Lupa kata sandi?</a>
+                <Link to="/forgot-password">Lupa kata sandi?</Link>
               </ForgotPassword>
               <Button type="submit">Log In</Button>
             </Form>
