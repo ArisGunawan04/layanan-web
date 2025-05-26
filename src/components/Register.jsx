@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { FaUser, FaLock, FaEnvelope, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const RegisterContainer = styled.div`
   display: flex;
@@ -289,7 +290,7 @@ const Register = () => {
               <Button type="submit">Daftar</Button>
             </Form>
             <LoginLink>
-              Sudah punya akun? <a href="#">Masuk</a>
+              Sudah punya akun? <Link to="/login">Masuk</Link>
             </LoginLink>
           </RegisterCard>
         </FormContainer>
