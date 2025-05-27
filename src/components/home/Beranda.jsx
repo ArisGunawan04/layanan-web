@@ -206,12 +206,12 @@ const Beranda = () => {
   useEffect(() => {
     // Ambil data user dari localStorage
     const userData = localStorage.getItem('user');
-    if (userData && userData !== 'undefined') {
+    if (userData) {
       try {
         setUser(JSON.parse(userData));
       } catch (error) {
         console.error('Error parsing user data:', error);
-        localStorage.removeItem('user'); // Hapus data yang rusak
+        localStorage.removeItem('user'); // Hapus data user yang tidak valid
       }
     }
     
@@ -225,21 +225,37 @@ const Beranda = () => {
       const token = localStorage.getItem('token');
       
       if (!token) {
-        throw new Error('Token tidak ditemukan');
+        setError('Silakan login terlebih dahulu');
+        setLoading(false);
+        // Redirect ke halaman login
+        window.location.href = '/login';
+        return;
       }
       
-      const response = await axios.get('http://localhost:5000/api/posts', {
-        headers: {
-          Authorization: `Bearer ${token}`
+      try {
+        const response = await axios.get('http://localhost:5000/api/posts', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        setPosts(response.data.data || []);
+        setLoading(false);
+      } catch (apiError) {
+        // Jika token tidak valid (401), redirect ke login
+        if (apiError.response && apiError.response.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
         }
-      });
-      
-      setPosts(response.data.data);
-      setLoading(false);
+        setError(apiError.message);
+        setLoading(false);
+        console.error('Error fetching posts:', apiError);
+      }
     } catch (err) {
       setError(err.message);
       setLoading(false);
-      console.error('Error fetching posts:', err);
+      console.error('Error dalam fungsi fetchPosts:', err);
     }
   };
   
