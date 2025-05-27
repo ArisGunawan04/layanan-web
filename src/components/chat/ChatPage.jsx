@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import '../../App.css';
 import { useRef, useCallback } from 'react';
 import io from 'socket.io-client';
+import { formatLastSeen } from '../../utils/timeUtils';
 
 const ChatPage = () => {
   const [users, setUsers] = useState([]);
@@ -19,6 +20,16 @@ const ChatPage = () => {
 
     socket.current.on('receiveMessage', (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    socket.current.on('userStatusChange', (updatedUser) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.user_id === updatedUser.user_id
+            ? { ...user, is_online: updatedUser.is_online, last_seen: updatedUser.last_seen }
+            : user
+        )
+      );
     });
 
     return () => {
@@ -138,7 +149,17 @@ const ChatPage = () => {
                 className={selectedUser && selectedUser.user_id === user.user_id ? 'active' : ''}
               >
                 <img src={user.foto_profil || 'https://via.placeholder.com/40'} alt={user.username} className="profile-pic" />
-                <span>{user.username}</span>
+                <div style={{ textAlign: 'left', paddingLeft: '20px' }}>
+                  <span>{user.username}</span>
+                  <br />
+                  <small>
+                    {user.is_online ? (
+                      <span style={{ color: 'green' }}>Sedang aktif</span>
+                    ) : (
+                      formatLastSeen(user.last_seen)
+                    )}
+                  </small>
+                </div>
               </li>
             ))
           ) : (
