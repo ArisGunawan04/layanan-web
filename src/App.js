@@ -5,6 +5,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Beranda from './components/home/Beranda';
 import Layout from './components/layout/Layout';
+import ChatPage from './components/chat/ChatPage';
 
 // Komponen untuk rute yang memerlukan autentikasi
 const ProtectedRoute = ({ children }) => {
@@ -50,7 +51,21 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
-          
+          <Route path="/chat" element={
+            <ProtectedRoute>
+              <Layout>
+                <ChatPage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/chat/:id_penerima" element={
+            <ProtectedRoute>
+              <Layout>
+                <ChatPage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+        
           {/* Redirect ke beranda jika sudah login, ke login jika belum */}
           <Route path="/" element={
             isAuthenticated ? 

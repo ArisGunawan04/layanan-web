@@ -112,7 +112,7 @@ const Sidebar = ({ onLogout }) => {
           <NavText>Beranda</NavText>
         </NavItem>
         
-        <NavItem to="/pesan" activeclassname="active">
+        <NavItem to="/chat" activeclassname="active">
           <NavIcon><FaComment /></NavIcon>
           <NavText>Pesan</NavText>
         </NavItem>
