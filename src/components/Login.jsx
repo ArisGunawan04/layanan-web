@@ -131,6 +131,25 @@ const Button = styled.button`
   &:active {
     transform: translateY(-1px);
   }
+
+  &:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: center;
+  background-color: rgba(231, 76, 60, 0.1);
+  padding: 8px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  display: ${props => props.show ? 'block' : 'none'};
 `;
 
 const ForgotPassword = styled.div`
@@ -180,10 +199,20 @@ const Login = () => {
     });
   };
 
+  const [error, setError] = useState('');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', { // Ganti URL jika backend berjalan di tempat lain
+      // Validasi input
+      if (!formData.email || !formData.password) {
+        setError('Email dan password harus diisi');
+        return;
+      }
+      
+      const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,11 +232,11 @@ const Login = () => {
         window.location.href = '/beranda';
       } else {
         console.error('Login gagal:', data.message);
-        alert('Login gagal: ' + data.message);
+        setError(data.message || 'Login gagal, coba lagi');
       }
     } catch (error) {
       console.error('Terjadi kesalahan saat login:', error);
-      // Tampilkan pesan error koneksi
+      setError('Terjadi kesalahan koneksi, coba lagi nanti');
     }
   };
 
@@ -258,7 +287,8 @@ const Login = () => {
               <ForgotPassword>
                 <Link to="/forgot-password">Lupa kata sandi?</Link>
               </ForgotPassword>
-              <Button type="submit">Log In</Button>
+              <ErrorMessage show={error !== ''}>{error}</ErrorMessage>
+              <Button type="submit" disabled={formData.email === '' || formData.password === ''}>Log In</Button>
             </Form>
             <Register>
               Belum punya akun? <Link to="/register">Daftar</Link>
