@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom';
 import '../../App.css';
 import { useRef, useCallback } from 'react';
 import io from 'socket.io-client';
+import { formatDistanceToNow } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 const ChatPage = () => {
   const [users, setUsers] = useState([]);
@@ -13,6 +15,44 @@ const ChatPage = () => {
   const { id_penerima: initialRecipientId } = useParams();
   const messagesEndRef = useRef(null);
   const socket = useRef(null);
+  
+  // Fungsi untuk menentukan apakah pengguna online atau tidak
+  const isUserOnline = (lastSeen) => {
+    if (!lastSeen || lastSeen === null || lastSeen === undefined) {
+      console.log('lastSeen tidak valid:', lastSeen);
+      return false;
+    }
+    
+    try {
+      const lastSeenDate = new Date(lastSeen);
+      const now = new Date();
+      const diffInMinutes = (now - lastSeenDate) / (1000 * 60);
+      
+      console.log('User lastSeen:', lastSeen, 'diffInMinutes:', diffInMinutes);
+      return diffInMinutes < 5; // Online jika terakhir aktif kurang dari 5 menit yang lalu
+    } catch (error) {
+      console.error('Error parsing lastSeen date:', error);
+      return false;
+    }
+  };
+  
+  // Fungsi untuk mendapatkan teks status terakhir online
+  const getLastSeenText = (lastSeen) => {
+    if (!lastSeen || lastSeen === null || lastSeen === undefined) {
+      console.log('lastSeen tidak valid untuk teks:', lastSeen);
+      return 'Tidak diketahui';
+    }
+    
+    try {
+      return formatDistanceToNow(new Date(lastSeen), { 
+        addSuffix: true,
+        locale: id // Gunakan locale Indonesia
+      });
+    } catch (error) {
+      console.error('Error formatting lastSeen date:', error);
+      return 'Tidak diketahui';
+    }
+  };
 
   useEffect(() => {
     socket.current = io('http://localhost:5000'); // Sesuaikan dengan URL backend Anda
@@ -24,6 +64,30 @@ const ChatPage = () => {
     return () => {
       socket.current.disconnect();
     };
+  }, []);
+  
+  // Interval untuk memperbarui status online/offline setiap 30 detik
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Memperbarui daftar pengguna untuk mendapatkan status terbaru
+      const fetchUsers = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get('http://localhost:5000/api/users', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setUsers(response.data);
+        } catch (error) {
+          console.error('Error fetching users:', error);
+        }
+      };
+      
+      fetchUsers();
+    }, 10000); // 10 detik
+    
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -37,6 +101,10 @@ const ChatPage = () => {
           },
         });
         console.log('Respons pengguna:', response.data);
+        // Log last_seen untuk debugging
+        response.data.forEach(user => {
+          console.log(`User ${user.username} last_seen:`, user.last_seen);
+        });
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -53,6 +121,10 @@ const ChatPage = () => {
     };
 
     fetchUsers();
+    
+    // Juga mengatur interval untuk memperbarui daftar pengguna setiap 30 detik
+    const interval = setInterval(fetchUsers, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const scrollToBottom = () => {
@@ -83,6 +155,16 @@ const ChatPage = () => {
       }
     }
   }, [initialRecipientId, users, fetchMessages]);
+
+  useEffect(() => {
+    if (selectedUser) {
+      // Update selectedUser when users list is updated
+      const updatedUser = users.find(u => u.user_id === selectedUser.user_id);
+      if (updatedUser) {
+        setSelectedUser(updatedUser);
+      }
+    }
+  }, [users, selectedUser]);
 
   useEffect(() => {
     scrollToBottom();
@@ -138,7 +220,14 @@ const ChatPage = () => {
                 className={selectedUser && selectedUser.user_id === user.user_id ? 'active' : ''}
               >
                 <img src={user.foto_profil || 'https://via.placeholder.com/40'} alt={user.username} className="profile-pic" />
-                <span>{user.username}</span>
+                <div className="user-status-container">
+                  <span>{user.username}</span>
+                  <div className="user-status">
+                    <span className="status-text">
+                      {isUserOnline(user.last_seen) ? <span style={{ color: 'green' }}>sedang aktif</span> : `aktif ${getLastSeenText(user.last_seen)}`}
+                    </span>
+                  </div>
+                </div>
               </li>
             ))
           ) : (
@@ -151,7 +240,14 @@ const ChatPage = () => {
           <>
             <div className="chat-header">
               <img src={selectedUser.foto_profil || 'https://via.placeholder.com/40'} alt={selectedUser.username} className="profile-pic" />
-              <h3>{selectedUser.username}</h3>
+              <div className="user-status-container">
+                <h3>{selectedUser.username}</h3>
+                <div className="user-status">
+                  <span className="status-text">
+                    {isUserOnline(selectedUser.last_seen) ? <span style={{ color: 'green' }}>sedang aktif</span> : `aktif ${getLastSeenText(selectedUser.last_seen)}`}
+                  </span>
+                </div>
+              </div>
             </div>
             <div className="messages">
               {messages.map((msg) => (

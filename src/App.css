@@ -219,3 +219,39 @@
 main {
   margin-left: 220px; /* Lebar sidebar */
 }
+
+/* Style untuk status online/offline */
+.user-status-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Menyelaraskan konten ke kiri */
+  margin-left: 10px; 
+}
+
+.user-status {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.status-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.status-online {
+  background-color: #4CAF50; /* Hijau */
+}
+
+.status-offline {
+  background-color: #9e9e9e; /* Abu-abu */
+}
+
+.status-text {
+  color: #666;
+  font-size: 11px;
+  text-align: left;
+}
