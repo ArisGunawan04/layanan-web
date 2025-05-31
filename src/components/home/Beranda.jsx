@@ -382,23 +382,26 @@ const Beranda = () => {
   const handleLike = async (postId) => {
     try {
       const token = localStorage.getItem('token');
-      
       if (!token) {
         throw new Error('Token tidak ditemukan');
       }
       
-      // Cek apakah post sudah dilike
-      const isLiked = posts.find(post => post.id_post === postId)?.isLiked;
+      // Update UI optimistically
+      const updatedPosts = posts.map(post => {
+        if (post.id_post === postId) {
+          const isLiked = !post.isLiked;
+          return {
+            ...post,
+            isLiked,
+            likeCount: isLiked ? post.likeCount + 1 : post.likeCount - 1
+          };
+        }
+        return post;
+      });
+      setPosts(updatedPosts);
       
-      if (isLiked) {
-        // Unlike post
-        await axios.delete(`http://localhost:5000/api/likes/${postId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      } else {
-        // Like post
+      // Kirim request ke backend
+      if (updatedPosts.find(post => post.id_post === postId)?.isLiked) {
         await axios.post('http://localhost:5000/api/likes', {
           id_post: postId
         }, {
@@ -406,12 +409,17 @@ const Beranda = () => {
             Authorization: `Bearer ${token}`
           }
         });
+      } else {
+        await axios.delete(`http://localhost:5000/api/likes/${postId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
       }
-      
-      // Refresh posts
-      fetchPosts();
     } catch (err) {
       console.error('Error liking post:', err);
+      // Kembalikan ke state sebelumnya jika error
+      setPosts(posts);
     }
   };
   
@@ -564,8 +572,8 @@ const Beranda = () => {
               <PostActions>
                 <ActionGroup>
                   <CountText>{post.likeCount || 0} suka</CountText>
-                  <ActionButton 
-                    active={post.isLiked} 
+                  <ActionButton
+                    active={post.isLiked}
                     onClick={() => handleLike(post.id_post)}
                   >
                     <ActionIcon>
