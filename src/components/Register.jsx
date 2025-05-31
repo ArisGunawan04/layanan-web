@@ -208,7 +208,7 @@ const Register = () => {
     <RegisterContainer>
       <LeftContainer>
         <Header>
-          <Logo src="/asset/logo.png" alt="ConnectHub Logo" /> {/* Ganti dengan path logo Anda */}
+          <Logo src="/src/assets/logo.png" alt="ConnectHub Logo" /> {/* Ganti dengan path logo Anda */}
           <AppName>ConnectHub</AppName>
         </Header>
         <FormContainer>
