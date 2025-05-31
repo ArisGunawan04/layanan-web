@@ -3,27 +3,26 @@ import styled from 'styled-components';
 import { FaHeart, FaRegHeart, FaComment, FaEllipsisH } from 'react-icons/fa';
 import axios from 'axios';
 
-const BerandaContainer = styled.div`
-  margin-left: 220px;
-  padding: 20px;
-  background-color: #f0f2f5;
-  min-height: 100vh;
-`;
-
 const ContentWrapper = styled.div`
-  max-width: 700px;
-  margin: 0 auto;
+  max-width: 750px;
+  margin: 0;
+  margin-left: 50px;
 `;
 
 const CreatePostCard = styled.div`
   background-color: #fff;
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 15px;
   margin-bottom: 20px;
 `;
 
 const CreatePostForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const PostInputRow = styled.div`
   display: flex;
   align-items: center;
 `;
@@ -36,7 +35,7 @@ const ProfilePic = styled.img`
   object-fit: cover;
 `;
 
-const PostInput = styled.input`
+const PostInput = styled.textarea`
   flex: 1;
   border: none;
   background-color: #f0f2f5;
@@ -44,9 +43,95 @@ const PostInput = styled.input`
   padding: 10px 15px;
   font-size: 14px;
   outline: none;
+  resize: none;
+  min-height: 40px;
+  max-height: 120px;
+  font-family: inherit;
   
   &::placeholder {
     color: #65676b;
+  }
+`;
+
+const CreatePostActions = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  gap: 20px;
+  align-items: center;
+  padding-left: 55px;
+`;
+
+const MediaUpload = styled.input`
+  display: none;
+`;
+
+const MediaButton = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  background-color: #f0f2f5;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #65676b;
+  
+  &:hover {
+    background-color: #e4e6eb;
+  }
+`;
+
+const SubmitButton = styled.button`
+  background-color: #4a6cf7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #3b5bdb;
+  }
+  
+  &:disabled {
+    background-color: #e4e6eb;
+    color: #bcc0c4;
+    cursor: not-allowed;
+  }
+`;
+
+const MediaPreview = styled.div`
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+`;
+
+const PreviewImage = styled.img`
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+`;
+
+const RemoveMedia = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.8);
   }
 `;
 
@@ -59,14 +144,14 @@ const FeedContainer = styled.div`
 const PostCard = styled.div`
   background-color: #fff;
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 `;
 
 const PostHeader = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 20px;
   padding: 12px 15px;
 `;
 
@@ -104,6 +189,7 @@ const PostText = styled.p`
   margin: 0 0 10px;
   font-size: 14px;
   line-height: 1.5;
+  text-align: left;
 `;
 
 const PostImage = styled.img`
@@ -114,8 +200,22 @@ const PostImage = styled.img`
 
 const PostActions = styled.div`
   display: flex;
+  justify-content: flex-start;
+  gap: 20px;
   padding: 10px 15px;
   border-top: 1px solid #e4e6eb;
+`;
+
+const ActionGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+`;
+
+const CountText = styled.span`
+  font-size: 14px;
+  color: #65676b;
 `;
 
 const LikeCount = styled.div`
@@ -136,7 +236,7 @@ const ActionButton = styled.button`
   padding: 8px 12px;
   cursor: pointer;
   flex: 1;
-  justify-content: center;
+  justify-content: flex-start;
   
   &:hover {
     background-color: #f0f2f5;
@@ -182,7 +282,7 @@ const StoryUser = styled.div`
   bottom: 10px;
   left: 10px;
   right: 10px;
-  text-align: center;
+  text-align: left;
   color: white;
   font-size: 12px;
   font-weight: 600;
@@ -195,6 +295,9 @@ const Beranda = () => {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [newPostText, setNewPostText] = useState('');
+  const [selectedMedia, setSelectedMedia] = useState(null);
+  const [mediaPreview, setMediaPreview] = useState(null);
+  const [isPosting, setIsPosting] = useState(false);
   
   // Contoh data story
   const stories = [
@@ -259,6 +362,23 @@ const Beranda = () => {
     }
   };
   
+  const handleMediaSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedMedia(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setMediaPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const removeMedia = () => {
+    setSelectedMedia(null);
+    setMediaPreview(null);
+  };
+  
   const handleLike = async (postId) => {
     try {
       const token = localStorage.getItem('token');
@@ -296,27 +416,40 @@ const Beranda = () => {
   };
   
   const handleCreatePost = async () => {
-    if (!newPostText.trim()) return;
+    if (!newPostText.trim() && !selectedMedia) return;
     
     try {
+      setIsPosting(true);
       const token = localStorage.getItem('token');
       
       if (!token) {
         throw new Error('Token tidak ditemukan');
       }
       
-      await axios.post('http://localhost:5000/api/posts', {
-        caption: newPostText
-      }, {
+      const formData = new FormData();
+      if (newPostText.trim()) {
+        formData.append('caption', newPostText);
+      }
+      if (selectedMedia) {
+        formData.append('media', selectedMedia);
+      }
+      
+      await axios.post('http://localhost:5000/api/posts', formData, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
         }
       });
       
       setNewPostText('');
+      setSelectedMedia(null);
+      setMediaPreview(null);
       fetchPosts();
     } catch (err) {
       console.error('Error creating post:', err);
+      setError('Gagal membuat post');
+    } finally {
+      setIsPosting(false);
     }
   };
   
@@ -337,15 +470,15 @@ const Beranda = () => {
   };
   
   if (loading) {
-    return <BerandaContainer>Loading...</BerandaContainer>;
+    return <div>Loading...</div>;
   }
   
   if (error) {
-    return <BerandaContainer>Error: {error}</BerandaContainer>;
+    return <div>Error: {error}</div>;
   }
   
   return (
-    <BerandaContainer>
+    <div>
       <ContentWrapper>
         <StoryContainer>
           {stories.map(story => (
@@ -358,13 +491,44 @@ const Beranda = () => {
         
         <CreatePostCard>
           <CreatePostForm>
-            <ProfilePic src={user?.profile_picture || "https://via.placeholder.com/40"} alt="Profile" />
-            <PostInput 
-              placeholder="Ketikan sesuatu..." 
-              value={newPostText}
-              onChange={(e) => setNewPostText(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleCreatePost()}
-            />
+            <PostInputRow>
+              <ProfilePic src={user?.foto_profil || "https://via.placeholder.com/40"} alt="Profile" />
+              <PostInput 
+                placeholder="Apa yang sedang Anda pikirkan?" 
+                value={newPostText}
+                onChange={(e) => setNewPostText(e.target.value)}
+                rows={1}
+                onInput={(e) => {
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
+              />
+            </PostInputRow>
+            
+            {mediaPreview && (
+              <MediaPreview>
+                <PreviewImage src={mediaPreview} alt="Preview" />
+                <RemoveMedia onClick={removeMedia}>×</RemoveMedia>
+              </MediaPreview>
+            )}
+            
+            <CreatePostActions>
+               <MediaButton>
+                 📷 Foto/Video
+                 <MediaUpload 
+                   type="file" 
+                   accept="image/*,video/*" 
+                   onChange={handleMediaSelect}
+                 />
+               </MediaButton>
+               
+               <SubmitButton 
+                 onClick={handleCreatePost}
+                 disabled={(!newPostText.trim() && !selectedMedia) || isPosting}
+               >
+                 {isPosting ? 'Memposting...' : 'Posting'}
+               </SubmitButton>
+             </CreatePostActions>
           </CreatePostForm>
         </CreatePostCard>
         
@@ -374,7 +538,7 @@ const Beranda = () => {
               <PostHeader>
                 <PostUser>
                   <ProfilePic 
-                    src={post.User?.profile_picture || "https://via.placeholder.com/40"} 
+                    src={post.User?.foto_profil || "https://via.placeholder.com/40"} 
                     alt={post.User?.name} 
                   />
                   <UserInfo>
@@ -397,31 +561,35 @@ const Beranda = () => {
                 <PostImage src={`http://localhost:5000${post.media}`} alt="Post" />
               )}
               
-              <LikeCount>{post.likeCount || 0} suka</LikeCount>
-              
               <PostActions>
-                <ActionButton 
-                  active={post.isLiked} 
-                  onClick={() => handleLike(post.id_post)}
-                >
-                  <ActionIcon>
-                    {post.isLiked ? <FaHeart /> : <FaRegHeart />}
-                  </ActionIcon>
-                  Suka
-                </ActionButton>
+                <ActionGroup>
+                  <CountText>{post.likeCount || 0} suka</CountText>
+                  <ActionButton 
+                    active={post.isLiked} 
+                    onClick={() => handleLike(post.id_post)}
+                  >
+                    <ActionIcon>
+                      {post.isLiked ? <FaHeart /> : <FaRegHeart />}
+                    </ActionIcon>
+                    Suka
+                  </ActionButton>
+                </ActionGroup>
                 
-                <ActionButton>
-                  <ActionIcon>
-                    <FaComment />
-                  </ActionIcon>
-                  Komentar
-                </ActionButton>
+                <ActionGroup>
+                  <CountText>{post.commentCount || 0} komentar</CountText>
+                  <ActionButton>
+                    <ActionIcon>
+                      <FaComment />
+                    </ActionIcon>
+                    Komentar
+                  </ActionButton>
+                </ActionGroup>
               </PostActions>
             </PostCard>
           ))}
         </FeedContainer>
       </ContentWrapper>
-    </BerandaContainer>
+    </div>
   );
 };
 
