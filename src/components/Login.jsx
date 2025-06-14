@@ -2,11 +2,18 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { createApiUrl, createAuthHeaders } from '../config/api';
+import API_CONFIG from '../config/api';
 
 const LoginContainer = styled.div`
   display: flex;
   min-height: 100vh;
   background-color: #f0f0f0; /* Warna latar belakang ringan */
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    background-color: #fff;
+  }
 `;
 
 const LeftContainer = styled.div`
@@ -14,24 +21,46 @@ const LeftContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 0;
+    min-height: 100vh;
+    justify-content: center;
+  }
 `;
 
 const Header = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 40px; /* Space below header */
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+    margin-bottom: 60px;
+    padding: 20px 0;
+  }
 `;
 
 const Logo = styled.img`
   width: 40px;
   height: 40px;
   margin-right: 10px;
+  
+  @media (max-width: 768px) {
+    width: 50px;
+    height: 50px;
+  }
 `;
 
 const AppName = styled.h2`
   color: #333;
   font-size: 24px;
   font-weight: 700;
+  
+  @media (max-width: 768px) {
+    color: #6366f1;
+    font-size: 28px;
+  }
 `;
 
 const ImageContainer = styled.div`
@@ -40,6 +69,10 @@ const ImageContainer = styled.div`
   background-size: cover;
   background-position: center;
   min-height: 100vh;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const FormContainer = styled.div`
@@ -49,6 +82,11 @@ const FormContainer = styled.div`
   align-items: center;
   padding: 20px;
   flex-grow: 1; /* Memungkinkan FormContainer mengambil sisa ruang */
+  
+  @media (max-width: 768px) {
+    padding: 0 20px;
+    align-items: flex-start;
+  }
 `;
 
 const LoginCard = styled.div`
@@ -58,6 +96,16 @@ const LoginCard = styled.div`
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
   padding: 40px;
   backdrop-filter: blur(10px);
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 350px;
+    background-color: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 20px;
+    backdrop-filter: none;
+  }
 `;
 
 const Title = styled.h1`
@@ -66,6 +114,23 @@ const Title = styled.h1`
   margin-bottom: 30px;
   font-size: 28px;
   font-weight: 700;
+  
+  @media (max-width: 768px) {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+`;
+
+const Subtitle = styled.p`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
 `;
 
 const Form = styled.form`
@@ -91,6 +156,17 @@ const Input = styled.input`
   &:focus {
     box-shadow: 0 0 0 2px #a777e3;
     background-color: #fff;
+  }
+  
+  @media (max-width: 768px) {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    padding: 16px 15px 16px 45px;
+    
+    &:focus {
+      box-shadow: 0 0 0 2px #6366f1;
+      border-color: #6366f1;
+    }
   }
 `;
 
@@ -130,6 +206,23 @@ const Button = styled.button`
 
   &:active {
     transform: translateY(-1px);
+  }
+  
+  @media (max-width: 768px) {
+    background: #6366f1;
+    padding: 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    
+    &:hover {
+      transform: none;
+      background: #5856eb;
+      box-shadow: none;
+    }
+    
+    &:active {
+      transform: none;
+    }
   }
 `;
 
@@ -183,11 +276,9 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', { // Ganti URL jika backend berjalan di tempat lain
+      const response = await fetch(createApiUrl(API_CONFIG.ENDPOINTS.AUTH.LOGIN), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: createAuthHeaders(false), // false karena belum login
         body: JSON.stringify(formData),
       });
 
@@ -225,6 +316,7 @@ const Login = () => {
         <FormContainer>
           <LoginCard>
             <Title>Masuk</Title>
+            <Subtitle>jalin komunikasi dengan orang terdekat</Subtitle>
             <Form onSubmit={handleSubmit}>
               <InputGroup>
                 <Icon>
@@ -258,7 +350,7 @@ const Login = () => {
               <ForgotPassword>
                 <Link to="/forgot-password">Lupa kata sandi?</Link>
               </ForgotPassword>
-              <Button type="submit">Log In</Button>
+              <Button type="submit">Masuk</Button>
             </Form>
             <Register>
               Belum punya akun? <Link to="/register">Daftar</Link>

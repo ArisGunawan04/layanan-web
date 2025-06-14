@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { createApiUrl, createAuthHeaders } from '../config/api';
+import API_CONFIG from '../config/api';
 import styled from 'styled-components';
 import { FaUser, FaLock, FaEnvelope, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -171,11 +173,9 @@ const Register = () => {
     console.log('Mendaftar dengan:', formData);
     // Tambahkan logika autentikasi di sini
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', { // Ganti URL jika backend berjalan di tempat lain
+      const response = await fetch(createApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: createAuthHeaders(false), // false karena belum login
         body: JSON.stringify(formData),
       });
 
