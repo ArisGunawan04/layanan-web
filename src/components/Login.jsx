@@ -36,7 +36,7 @@ const AppName = styled.h2`
 
 const ImageContainer = styled.div`
   flex: 0.5;
-  background-image: url('/asset/landing page animation.png');
+  background-image: url('/src/assets/landing page animation.png');
   background-size: cover;
   background-position: center;
   min-height: 100vh;
@@ -219,7 +219,7 @@ const Login = () => {
     <LoginContainer>
       <LeftContainer>
         <Header>
-          <Logo src="/asset/logo.png" alt="ConnectHub Logo" /> {/* Ganti dengan path logo Anda */}
+          <Logo src="/src/assets/Logo.png" alt="ConnectHub Logo" /> {/* Ganti dengan path logo Anda */}
           <AppName>ConnectHub</AppName>
         </Header>
         <FormContainer>
