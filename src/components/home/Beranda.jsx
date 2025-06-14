@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaHeart, FaRegHeart, FaComment, FaEllipsisH } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaComment, FaEllipsisH, FaTimes } from 'react-icons/fa';
 import axios from 'axios';
 
 const ContentWrapper = styled.div`
@@ -177,8 +177,91 @@ const PostTime = styled.p`
 `;
 
 const MoreOptions = styled.div`
+  position: relative;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  color: #65676b;
+  
+  &:hover {
+    background-color: #f0f2f5;
+  }
+`;
+
+// Modal Styles
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ModalHeader = styled.div`
+  padding: 15px 20px;
+  border-bottom: 1px solid #e4e6eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+`;
+
+const ModalTitle = styled.h3`
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1c1e21;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 20px;
   cursor: pointer;
   color: #65676b;
+  padding: 5px;
+  border-radius: 50%;
+  
+  &:hover {
+    background-color: #f0f2f5;
+  }
+`;
+
+const ModalBody = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px 20px;
+`;
+
+const ViewMoreButton = styled.button`
+  background: none;
+  border: none;
+  color: #4a6cf7;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 0;
+  font-size: 14px;
+  margin-top: 10px;
+  
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const PostContent = styled.div`
@@ -298,6 +381,15 @@ const Beranda = () => {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [mediaPreview, setMediaPreview] = useState(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [newCommentInput, setNewCommentInput] = useState({});
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState(null);
+  const [allComments, setAllComments] = useState([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [modalCommentInput, setModalCommentInput] = useState('');
+  const [commentPage, setCommentPage] = useState(1);
+  const [hasMoreComments, setHasMoreComments] = useState(false);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   
   // Contoh data story
   const stories = [
@@ -382,23 +474,26 @@ const Beranda = () => {
   const handleLike = async (postId) => {
     try {
       const token = localStorage.getItem('token');
-      
       if (!token) {
         throw new Error('Token tidak ditemukan');
       }
       
-      // Cek apakah post sudah dilike
-      const isLiked = posts.find(post => post.id_post === postId)?.isLiked;
+      // Update UI optimistically
+      const updatedPosts = posts.map(post => {
+        if (post.id_post === postId) {
+          const isLiked = !post.isLiked;
+          return {
+            ...post,
+            isLiked,
+            likeCount: isLiked ? post.likeCount + 1 : post.likeCount - 1
+          };
+        }
+        return post;
+      });
+      setPosts(updatedPosts);
       
-      if (isLiked) {
-        // Unlike post
-        await axios.delete(`http://localhost:5000/api/likes/${postId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      } else {
-        // Like post
+      // Kirim request ke backend
+      if (updatedPosts.find(post => post.id_post === postId)?.isLiked) {
         await axios.post('http://localhost:5000/api/likes', {
           id_post: postId
         }, {
@@ -406,12 +501,17 @@ const Beranda = () => {
             Authorization: `Bearer ${token}`
           }
         });
+      } else {
+        await axios.delete(`http://localhost:5000/api/likes/${postId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
       }
-      
-      // Refresh posts
-      fetchPosts();
     } catch (err) {
       console.error('Error liking post:', err);
+      // Kembalikan ke state sebelumnya jika error
+      setPosts(posts);
     }
   };
   
@@ -466,6 +566,124 @@ const Beranda = () => {
       return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
     } else {
       return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
+    }
+  };
+  
+  const handleCommentChange = (postId, text) => {
+    setNewCommentInput(prev => ({
+      ...prev,
+      [postId]: text
+    }));
+  };
+  
+  const submitComment = async (postId) => {
+    const commentText = newCommentInput[postId]?.trim();
+    if (!commentText) return;
+  
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token tidak ditemukan');
+      }
+  
+      await axios.post(
+        `http://localhost:5000/api/comments/post/${postId}`,
+        { isi_komentar: commentText },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+  
+      // Reset input
+      setNewCommentInput(prev => ({
+        ...prev,
+        [postId]: ''
+      }));
+  
+      // Refresh posts untuk menampilkan komentar baru
+      fetchPosts();
+  
+    } catch (err) {
+      console.error('Error submitting comment:', err);
+      setError('Gagal mengirim komentar');
+    }
+  };
+
+  const openCommentsModal = async (postId) => {
+    setSelectedPostId(postId);
+    setShowCommentsModal(true);
+    setLoadingComments(true);
+    setCommentPage(1);
+    
+    try {
+      const response = await axios.get(`http://localhost:5000/api/comments/post/${postId}`);
+      setAllComments(response.data.data || []);
+      setHasMoreComments(response.data.currentPage < response.data.totalPages);
+    } catch (err) {
+      console.error('Error fetching comments:', err);
+      setError('Gagal mengambil komentar');
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const loadMoreComments = async () => {
+    if (!selectedPostId || loadingMoreComments) return;
+    
+    setLoadingMoreComments(true);
+    const nextPage = commentPage + 1;
+    
+    try {
+      const response = await axios.get(`http://localhost:5000/api/comments/post/${selectedPostId}?page=${nextPage}&limit=10`);
+      setAllComments(prev => [...prev, ...(response.data.data || [])]);
+      setCommentPage(nextPage);
+      setHasMoreComments(response.data.currentPage < response.data.totalPages);
+    } catch (err) {
+      console.error('Error loading more comments:', err);
+      setError('Gagal memuat komentar tambahan');
+    } finally {
+      setLoadingMoreComments(false);
+    }
+  };
+
+  const closeCommentsModal = () => {
+    setShowCommentsModal(false);
+    setSelectedPostId(null);
+    setAllComments([]);
+    setModalCommentInput('');
+    setCommentPage(1);
+    setHasMoreComments(false);
+  };
+
+  const submitModalComment = async () => {
+    if (!modalCommentInput.trim() || !selectedPostId) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token tidak ditemukan');
+      }
+
+      await axios.post(
+        `http://localhost:5000/api/comments/post/${selectedPostId}`,
+        { isi_komentar: modalCommentInput },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      setModalCommentInput(''); // Clear input
+      // Refresh komentar di modal
+      await openCommentsModal(selectedPostId);
+      // Refresh posts untuk update counter
+      fetchPosts();
+    } catch (err) {
+      console.error('Error submitting comment:', err);
+      setError('Gagal mengirim komentar');
     }
   };
   
@@ -564,8 +782,8 @@ const Beranda = () => {
               <PostActions>
                 <ActionGroup>
                   <CountText>{post.likeCount || 0} suka</CountText>
-                  <ActionButton 
-                    active={post.isLiked} 
+                  <ActionButton
+                    active={post.isLiked}
                     onClick={() => handleLike(post.id_post)}
                   >
                     <ActionIcon>
@@ -585,10 +803,190 @@ const Beranda = () => {
                   </ActionButton>
                 </ActionGroup>
               </PostActions>
+
+              {/* Komentar Section */}
+              <div style={{ padding: '0 15px 15px', borderTop: '1px solid #e4e6eb' }}>
+                {/* Daftar Komentar Preview (hanya 2 komentar) */}
+                {post.Komentars?.slice(0, 2).map((comment, index) => (
+                  <div key={index} style={{ display: 'flex', marginTop: '10px' }}>
+                    <img
+                      src={comment.User?.foto_profil || "https://via.placeholder.com/30"}
+                      alt={comment.User?.name}
+                      style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ background: '#f0f2f5', borderRadius: '18px', padding: '8px 12px' }}>
+                        <div style={{ fontWeight: '600', fontSize: '13px', textAlign: 'left' }}>{comment.User?.name}</div>
+                        <div style={{ fontSize: '14px', textAlign: 'left' }}>{comment.isi_komentar}</div>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#65676b', marginTop: '4px', marginLeft: '12px' }}>
+                        {formatTime(comment.waktu)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Tombol Lihat Semua Komentar */}
+                {post.commentCount > 2 && (
+                  <ViewMoreButton onClick={() => openCommentsModal(post.id_post)}>
+                    Lihat semua {post.commentCount} komentar
+                  </ViewMoreButton>
+                )}
+
+                {/* Input Komentar Baru */}
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+                  <img
+                    src={user?.foto_profil || "https://via.placeholder.com/30"}
+                    alt="Profile"
+                    style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
+                  />
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    <input
+                      type="text"
+                      placeholder="Tulis komentar..."
+                      value={newCommentInput[post.id_post] || ''}
+                      onChange={(e) => handleCommentChange(post.id_post, e.target.value)}
+                      style={{
+                        width: '100%',
+                        border: '1px solid #e4e6eb',
+                        borderRadius: '20px',
+                        padding: '8px 12px',
+                        fontSize: '14px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => submitComment(post.id_post)}
+                    disabled={!newCommentInput[post.id_post]?.trim()}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#4a6cf7',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      marginLeft: '10px',
+                      opacity: newCommentInput[post.id_post]?.trim() ? 1 : 0.5
+                    }}
+                  >
+                    Kirim
+                  </button>
+                </div>
+              </div>
             </PostCard>
           ))}
         </FeedContainer>
       </ContentWrapper>
+
+      {/* Modal Komentar */}
+      {showCommentsModal && (
+        <ModalOverlay onClick={closeCommentsModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>Komentar</ModalTitle>
+              <CloseButton onClick={closeCommentsModal}>
+                <FaTimes />
+              </CloseButton>
+            </ModalHeader>
+            
+            <ModalBody 
+              onScroll={(e) => {
+                const { scrollTop, scrollHeight, clientHeight } = e.target;
+                if (scrollHeight - scrollTop === clientHeight && hasMoreComments && !loadingMoreComments) {
+                  loadMoreComments();
+                }
+              }}
+              style={{ maxHeight: '400px', overflowY: 'auto' }}
+            >
+              {loadingComments ? (
+                <div style={{ textAlign: 'center', padding: '20px' }}>Memuat komentar...</div>
+              ) : (
+                <>
+                  {/* Daftar Semua Komentar */}
+                  {allComments.map((comment, index) => (
+                    <div key={index} style={{ display: 'flex', marginBottom: '15px' }}>
+                      <img
+                        src={comment.User?.foto_profil || "https://via.placeholder.com/40"}
+                        alt={comment.User?.name}
+                        style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '12px' }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ background: '#f0f2f5', borderRadius: '18px', padding: '10px 15px' }}>
+                          <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '2px', textAlign: 'left' }}>
+                            {comment.User?.name}
+                          </div>
+                          <div style={{ fontSize: '14px', lineHeight: '1.4', textAlign: 'left' }}>
+                            {comment.isi_komentar}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#65676b', marginTop: '5px', marginLeft: '15px' }}>
+                          {formatTime(comment.waktu)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {allComments.length === 0 && (
+                    <div style={{ textAlign: 'center', color: '#65676b', padding: '20px' }}>
+                      Belum ada komentar
+                    </div>
+                  )}
+                  
+                  {/* Loading indicator untuk infinite scroll */}
+                  {loadingMoreComments && (
+                    <div style={{ textAlign: 'center', padding: '15px 0', color: '#65676b', fontSize: '14px' }}>
+                      Memuat komentar...
+                    </div>
+                  )}
+                </>
+              )}
+            </ModalBody>
+            
+            {/* Input Komentar di Modal */}
+            <div style={{ padding: '15px 20px', borderTop: '1px solid #e4e6eb' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <img
+                  src={user?.foto_profil || "https://via.placeholder.com/35"}
+                  alt="Profile"
+                  style={{ width: '35px', height: '35px', borderRadius: '50%', marginRight: '10px' }}
+                />
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <input
+                    type="text"
+                    placeholder="Tulis komentar..."
+                    value={modalCommentInput}
+                    onChange={(e) => setModalCommentInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && submitModalComment()}
+                    style={{
+                      width: '100%',
+                      border: '1px solid #e4e6eb',
+                      borderRadius: '20px',
+                      padding: '10px 15px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={submitModalComment}
+                  disabled={!modalCommentInput.trim()}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#4a6cf7',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    marginLeft: '10px',
+                    opacity: modalCommentInput.trim() ? 1 : 0.5
+                  }}
+                >
+                  Kirim
+                </button>
+              </div>
+            </div>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </div>
   );
 };
