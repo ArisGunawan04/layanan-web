@@ -102,7 +102,7 @@ const Sidebar = ({ onLogout }) => {
   return (
     <SidebarContainer>
       <Logo>
-        <LogoImage src="/src/assets/logo.png" alt="ConnectHub Logo" />
+        <LogoImage src="/src/assets/Logo.png" alt="ConnectHub Logo" />
         <LogoText>ConnectHub</LogoText>
       </Logo>
       

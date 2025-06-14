@@ -219,7 +219,7 @@ const Login = () => {
     <LoginContainer>
       <LeftContainer>
         <Header>
-          <Logo src="/src/assets/logo.png" alt="ConnectHub Logo" /> {/* Ganti dengan path logo Anda */}
+          <Logo src="/src/assets/Logo.png" alt="ConnectHub Logo" /> {/* Ganti dengan path logo Anda */}
           <AppName>ConnectHub</AppName>
         </Header>
         <FormContainer>
