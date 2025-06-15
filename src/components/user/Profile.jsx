@@ -314,14 +314,14 @@ const Profile = () => {
           targetUserId = currentUserData.id;
           setUser(currentUserData);
         } else if (userId) {
-          const userResponse = await axios.get(`http://localhost:5000/api/users/${userId}`, {
+          const userResponse = await axios.get(`http://localhost:5001/api/users/${userId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          setUser(userResponse.data);
+          setUser(userResponse.data.data);
         }
         
         if (targetUserId) {
-          const postsResponse = await axios.get(`http://localhost:5000/api/posts/user/${targetUserId}`, {
+          const postsResponse = await axios.get(`http://localhost:5001/api/posts/user/${targetUserId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setPosts(Array.isArray(postsResponse.data) ? postsResponse.data : postsResponse.data?.data || []);
@@ -344,10 +344,10 @@ const Profile = () => {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
         
-        const followersRes = await axios.get(`http://localhost:5000/api/follow/${user.id}/followers/count`, { headers });
+        const followersRes = await axios.get(`http://localhost:5001/api/follow/${user.id}/followers/count`, { headers });
         setFollowersCount(followersRes.data.count);
         
-        const followingRes = await axios.get(`http://localhost:5000/api/follow/${user.id}/following/count`, { headers });
+        const followingRes = await axios.get(`http://localhost:5001/api/follow/${user.id}/following/count`, { headers });
         setFollowingCount(followingRes.data.count);
       } catch (err) {
         console.error('Error fetching follow counts:', err);
@@ -399,8 +399,8 @@ const Profile = () => {
           <ProfileInfo>
             <AvatarContainer>
               <Avatar 
-                src={user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/src/assets/default-avatar.png'} 
-                alt={user.nama}
+                src={user.foto_profil ? `http://localhost:5001${user.foto_profil}` : '/src/assets/default-avatar.png'} 
+                alt={user.name}
                 onError={(e) => {
                   e.target.src = '/src/assets/default-avatar.png';
                 }}
@@ -413,7 +413,7 @@ const Profile = () => {
             </AvatarContainer>
             
             <UserDetails>
-              <UserName>{user.nama}</UserName>
+              <UserName>{user.name}</UserName>
               <Username>@{user.username}</Username>
               <Bio>{user.bio || 'Belum ada bio'}</Bio>
               <JoinDate>Bergabung {formatDate(user.createdAt)}</JoinDate>
@@ -459,7 +459,7 @@ const Profile = () => {
                 <PostCard key={post.id || post.id_post}>
                   {post.media && (
                     <PostImage 
-                      src={`http://localhost:5000${post.media}`} 
+                      src={`http://localhost:5001${post.media}`} 
                       alt="Post media"
                       onError={(e) => {
                         e.target.style.display = 'none';
