@@ -9,6 +9,7 @@ import ChatPage from './components/chat/ChatPage';
 import Notifikasi from './components/Notifikasi';
 import Profile from './components/user/Profile';
 import EditProfile from './components/user/EditProfile';
+import Security from './components/user/Security';
 
 // Komponen untuk rute yang memerlukan autentikasi
 const ProtectedRoute = ({ children }) => {
@@ -92,6 +93,11 @@ function App() {
           <Route path="/edit-profil" element={
             <ProtectedRoute>
               <EditProfile />
+            </ProtectedRoute>
+          } />
+          <Route path="/keamanan" element={
+            <ProtectedRoute>
+              <Security />
             </ProtectedRoute>
           } />
         

@@ -19,6 +19,8 @@ const MainContent = styled.div`
   overflow-y: auto;
 `;
 
+
+
 const SettingsSidebar = styled.div`
   width: 250px;
   background: #f8f9fa;
@@ -65,21 +67,25 @@ const MenuLink = styled.button`
 
 const ProfileSection = styled.div`
   display: flex;
-  gap: 30px;
+  gap: 40px;
   align-items: flex-start;
   margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
 `;
 
 const LeftSection = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 180px;
+  min-width: 200px;
 `;
 
 const FormSection = styled.div`
   flex: 1;
-  max-width: 600px;
+  max-width: 500px;
 `;
 
 const Header = styled.div`
@@ -88,28 +94,31 @@ const Header = styled.div`
   justify-content: space-between;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 2px solid #007bff;
 `;
 
 const Title = styled.h2`
   margin: 0;
-  color: #333;
+  color: #007bff;
   display: flex;
   align-items: center;
   gap: 10px;
+  font-size: 24px;
+  font-weight: 600;
 `;
 
 const CloseButton = styled.button`
-  background: #f8f9fa;
+  background: none;
   border: none;
-  border-radius: 8px;
-  padding: 10px;
+  font-size: 20px;
   cursor: pointer;
   color: #666;
+  padding: 8px;
+  border-radius: 50%;
   transition: all 0.2s ease;
   
   &:hover {
-    background: #e9ecef;
+    background: #f8f9fa;
     color: #333;
   }
 `;
@@ -127,22 +136,22 @@ const AvatarContainer = styled.div`
 `;
 
 const Avatar = styled.img`
-  width: 150px;
-  height: 150px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #007bff;
+  border: 3px solid #007bff;
 `;
 
 const AvatarUpload = styled.label`
   position: absolute;
-  bottom: 5px;
-  right: 5px;
+  bottom: 0px;
+  right: 0px;
   background: #007bff;
   color: white;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,10 +165,11 @@ const AvatarUpload = styled.label`
 `;
 
 const UploadText = styled.p`
-  margin-top: 15px;
-  font-size: 14px;
-  color: #666;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #007bff;
   text-align: center;
+  font-weight: 500;
 `;
 
 const HiddenInput = styled.input`
@@ -178,37 +188,42 @@ const FormGroup = styled.div`
 `;
 
 const Label = styled.label`
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #333;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #555;
+  font-size: 14px;
 `;
 
 const Input = styled.input`
-  padding: 12px;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  font-size: 16px;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
   transition: border-color 0.2s ease;
+  background: white;
   
   &:focus {
     outline: none;
     border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
   }
 `;
 
 const TextArea = styled.textarea`
-  padding: 12px;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  font-size: 16px;
-  min-height: 100px;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
   resize: vertical;
+  min-height: 80px;
   font-family: inherit;
   transition: border-color 0.2s ease;
+  background: white;
   
   &:focus {
     outline: none;
     border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
   }
 `;
 
@@ -216,20 +231,21 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 15px;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 25px;
 `;
 
 const Button = styled.button`
-  padding: 12px 24px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
+  min-width: 100px;
 `;
 
 const SaveButton = styled(Button)`
@@ -247,11 +263,11 @@ const SaveButton = styled(Button)`
 `;
 
 const CancelButton = styled(Button)`
-  background: #6c757d;
+  background: #dc3545;
   color: white;
   
   &:hover {
-    background: #545b62;
+    background: #c82333;
   }
 `;
 
@@ -287,7 +303,7 @@ const EditProfile = () => {
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/users/profile', {
+      const response = await axios.get('http://localhost:5001/api/users/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -301,7 +317,7 @@ const EditProfile = () => {
       
       // Set avatar preview langsung tanpa delay
       if (userData.foto_profil) {
-        setAvatarPreview(`http://localhost:5000${userData.foto_profil}`);
+        setAvatarPreview(`http://localhost:5001${userData.foto_profil}`);
       } else {
         setAvatarPreview('/src/assets/default-avatar.png');
       }
@@ -354,7 +370,7 @@ const EditProfile = () => {
         submitData.append('foto_profil', formData.foto_profil);
       }
 
-      const response = await axios.put('http://localhost:5000/api/users/profile', submitData, {
+      const response = await axios.put('http://localhost:5001/api/users/profile', submitData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -394,9 +410,7 @@ const EditProfile = () => {
             </MenuLink>
           </MenuItem>
           <MenuItem>
-            <MenuLink active={false}>
-              Keamanan
-            </MenuLink>
+            <MenuLink onClick={() => navigate('/keamanan')}>Keamanan</MenuLink>
           </MenuItem>
         </MenuList>
       </SettingsSidebar>
@@ -416,7 +430,7 @@ const EditProfile = () => {
             <AvatarSection>
               <AvatarContainer>
                 <Avatar 
-                  src={avatarPreview || (formData.name ? `http://localhost:5000/uploads/profiles/default-avatar.png` : '/src/assets/default-avatar.png')} 
+                  src={avatarPreview || (formData.name ? `http://localhost:5001/uploads/profiles/default-avatar.png` : '/src/assets/default-avatar.png')} 
                   alt="Avatar"
                   onError={(e) => {
                     e.target.src = '/src/assets/default-avatar.png';
@@ -432,7 +446,7 @@ const EditProfile = () => {
                   onChange={handleAvatarChange}
                 />
               </AvatarContainer>
-              <UploadText>ubah foto profil</UploadText>
+              <UploadText>pilih file</UploadText>
             </AvatarSection>
           </LeftSection>
 
@@ -452,20 +466,20 @@ const EditProfile = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">username</Label>
                 <Input
                   id="username"
                   name="username"
                   type="text"
                   value={formData.username}
                   onChange={handleInputChange}
-                  placeholder="Masukkan username"
+                  placeholder="David_user"
                   required
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio">bio</Label>
                 <TextArea
                   id="bio"
                   name="bio"
