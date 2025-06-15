@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
-import { FaHome, FaComment, FaBell, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { FaHome, FaComment, FaBell, FaUser, FaSignOutAlt, FaUsers } from 'react-icons/fa';
 
 const SidebarContainer = styled.div`
   width: 220px;
@@ -120,6 +120,11 @@ const Sidebar = ({ onLogout }) => {
         <NavItem to="/pemberitahuan" activeclassname="active">
           <NavIcon><FaBell /></NavIcon>
           <NavText>Pemberitahuan</NavText>
+        </NavItem>
+        
+        <NavItem to="/users" activeclassname="active">
+          <NavIcon><FaUsers /></NavIcon>
+          <NavText>Temukan User</NavText>
         </NavItem>
         
         <NavItem to="/profil" activeclassname="active">
