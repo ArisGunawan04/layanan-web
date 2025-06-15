@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FaEdit, FaUsers, FaUserFriends, FaFileAlt, FaCamera } from 'react-icons/fa';
 import axios from 'axios';
 import FollowButton from '../common/FollowButton';
@@ -260,6 +260,7 @@ const EmptyState = styled.div`
 
 const Profile = () => {
   const { userId } = useParams();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -267,6 +268,36 @@ const Profile = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  
+  // Effect untuk memperbarui data user dari localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const userData = localStorage.getItem('user');
+      const currentUserData = userData ? JSON.parse(userData) : null;
+      setCurrentUser(currentUserData);
+      
+      // Jika ini adalah profil sendiri, update data user
+      if (!userId && currentUserData) {
+        setUser(currentUserData);
+      }
+    };
+    
+    // Listen untuk perubahan localStorage
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Juga check saat komponen di-focus kembali
+    const handleFocus = () => {
+      handleStorageChange();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [userId]);
   
   useEffect(() => {
     const fetchUserDataAndPosts = async () => {
@@ -368,8 +399,11 @@ const Profile = () => {
           <ProfileInfo>
             <AvatarContainer>
               <Avatar 
-                src={user.foto_profil || '/src/assets/default-avatar.png'} 
+                src={user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/src/assets/default-avatar.png'} 
                 alt={user.nama}
+                onError={(e) => {
+                  e.target.src = '/src/assets/default-avatar.png';
+                }}
               />
               {isOwnProfile && (
                 <EditAvatarButton>
@@ -387,7 +421,7 @@ const Profile = () => {
             
             <ActionButtons>
               {isOwnProfile ? (
-                <EditButton>
+                <EditButton onClick={() => navigate('/edit-profil')}>
                   <FaEdit /> Edit Profil
                 </EditButton>
               ) : (

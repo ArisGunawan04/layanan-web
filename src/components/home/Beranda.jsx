@@ -710,7 +710,7 @@ const Beranda = () => {
         <CreatePostCard>
           <CreatePostForm>
             <PostInputRow>
-              <ProfilePic src={user?.foto_profil || "https://via.placeholder.com/40"} alt="Profile" />
+              <ProfilePic src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "https://via.placeholder.com/40"} alt="Profile" />
               <PostInput 
                 placeholder="Apa yang sedang Anda pikirkan?" 
                 value={newPostText}
@@ -756,7 +756,7 @@ const Beranda = () => {
               <PostHeader>
                 <PostUser>
                   <ProfilePic 
-                    src={post.User?.foto_profil || "https://via.placeholder.com/40"} 
+                    src={post.User?.foto_profil ? `http://localhost:5000${post.User.foto_profil}` : "https://via.placeholder.com/40"} 
                     alt={post.User?.name} 
                   />
                   <UserInfo>
@@ -810,7 +810,7 @@ const Beranda = () => {
                 {post.Komentars?.slice(0, 2).map((comment, index) => (
                   <div key={index} style={{ display: 'flex', marginTop: '10px' }}>
                     <img
-                      src={comment.User?.foto_profil || "https://via.placeholder.com/30"}
+                      src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "https://via.placeholder.com/30"}
                       alt={comment.User?.name}
                       style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
                     />
@@ -836,7 +836,7 @@ const Beranda = () => {
                 {/* Input Komentar Baru */}
                 <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
                   <img
-                    src={user?.foto_profil || "https://via.placeholder.com/30"}
+                    src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "https://via.placeholder.com/30"}
                     alt="Profile"
                     style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
                   />
@@ -906,7 +906,7 @@ const Beranda = () => {
                   {allComments.map((comment, index) => (
                     <div key={index} style={{ display: 'flex', marginBottom: '15px' }}>
                       <img
-                        src={comment.User?.foto_profil || "https://via.placeholder.com/40"}
+                        src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "https://via.placeholder.com/40"}
                         alt={comment.User?.name}
                         style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '12px' }}
                       />
@@ -946,7 +946,7 @@ const Beranda = () => {
             <div style={{ padding: '15px 20px', borderTop: '1px solid #e4e6eb' }}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <img
-                  src={user?.foto_profil || "https://via.placeholder.com/35"}
+                  src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "https://via.placeholder.com/35"}
                   alt="Profile"
                   style={{ width: '35px', height: '35px', borderRadius: '50%', marginRight: '10px' }}
                 />
