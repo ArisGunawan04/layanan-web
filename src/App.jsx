@@ -6,6 +6,7 @@ import Register from './components/Register';
 import Beranda from './components/home/Beranda';
 import Layout from './components/layout/Layout';
 import ChatPage from './components/chat/ChatPage';
+import Notifikasi from './components/Notifikasi';
 
 // Komponen untuk rute yang memerlukan autentikasi
 const ProtectedRoute = ({ children }) => {
@@ -62,6 +63,13 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <ChatPage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/pemberitahuan" element={
+            <ProtectedRoute>
+              <Layout>
+                <Notifikasi />
               </Layout>
             </ProtectedRoute>
           } />
