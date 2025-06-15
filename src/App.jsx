@@ -6,10 +6,7 @@ import Register from './components/Register';
 import Beranda from './components/home/Beranda';
 import Layout from './components/layout/Layout';
 import ChatPage from './components/chat/ChatPage';
-import UserList from './components/user/UserList';
-import FollowList from './components/user/FollowList';
-import Profile from './components/user/Profile';
-import EditProfile from './components/user/EditProfile';
+import Notifikasi from './components/Notifikasi';
 
 // Komponen untuk rute yang memerlukan autentikasi
 const ProtectedRoute = ({ children }) => {
@@ -69,38 +66,10 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
-          <Route path="/users" element={
+          <Route path="/pemberitahuan" element={
             <ProtectedRoute>
               <Layout>
-                <UserList />
-              </Layout>
-            </ProtectedRoute>
-          } />
-          <Route path="/follow/:userId" element={
-            <ProtectedRoute>
-              <Layout>
-                <FollowList />
-              </Layout>
-            </ProtectedRoute>
-          } />
-          <Route path="/profil" element={
-            <ProtectedRoute>
-              <Layout>
-                <Profile />
-              </Layout>
-            </ProtectedRoute>
-          } />
-          <Route path="/profil/:userId" element={
-            <ProtectedRoute>
-              <Layout>
-                <Profile />
-              </Layout>
-            </ProtectedRoute>
-          } />
-          <Route path="/edit-profil" element={
-            <ProtectedRoute>
-              <Layout>
-                <EditProfile />
+                <Notifikasi />
               </Layout>
             </ProtectedRoute>
           } />

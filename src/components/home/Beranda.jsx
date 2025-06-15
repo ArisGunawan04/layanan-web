@@ -7,6 +7,12 @@ const ContentWrapper = styled.div`
   max-width: 750px;
   margin: 0;
   margin-left: 50px;
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
+    padding: 0 16px;
+    max-width: 100%;
+  }
 `;
 
 const CreatePostCard = styled.div`
@@ -14,6 +20,12 @@ const CreatePostCard = styled.div`
   border-radius: 10px;
   padding: 15px;
   margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    border-radius: 0;
+    margin-bottom: 8px;
+    padding: 12px 16px;
+  }
 `;
 
 const CreatePostForm = styled.div`
@@ -33,6 +45,12 @@ const ProfilePic = styled.img`
   border-radius: 50%;
   margin-right: 15px;
   object-fit: cover;
+  
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    margin-right: 12px;
+  }
 `;
 
 const PostInput = styled.textarea`
@@ -51,6 +69,12 @@ const PostInput = styled.textarea`
   &::placeholder {
     color: #65676b;
   }
+  
+  @media (max-width: 768px) {
+    font-size: 16px;
+    padding: 12px 16px;
+    border-radius: 24px;
+  }
 `;
 
 const CreatePostActions = styled.div`
@@ -59,6 +83,11 @@ const CreatePostActions = styled.div`
   gap: 20px;
   align-items: center;
   padding-left: 55px;
+  
+  @media (max-width: 768px) {
+    padding-left: 48px;
+    gap: 16px;
+  }
 `;
 
 const MediaUpload = styled.input`
@@ -145,6 +174,11 @@ const PostCard = styled.div`
   background-color: #fff;
   border-radius: 10px;
   overflow: hidden;
+  
+  @media (max-width: 768px) {
+    border-radius: 0;
+    margin-bottom: 8px;
+  }
 `;
 
 const PostHeader = styled.div`
@@ -153,6 +187,11 @@ const PostHeader = styled.div`
   justify-content: flex-start;
   gap: 20px;
   padding: 12px 15px;
+  
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    gap: 16px;
+  }
 `;
 
 const PostUser = styled.div`
@@ -168,12 +207,20 @@ const UserName = styled.h3`
   font-size: 14px;
   font-weight: 600;
   margin: 0;
+  
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
 `;
 
 const PostTime = styled.p`
   font-size: 12px;
   color: #65676b;
   margin: 0;
+  
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
 `;
 
 const MoreOptions = styled.div`
@@ -266,6 +313,10 @@ const ViewMoreButton = styled.button`
 
 const PostContent = styled.div`
   padding: 0 15px 15px;
+  
+  @media (max-width: 768px) {
+    padding: 0 16px 16px;
+  }
 `;
 
 const PostText = styled.p`
@@ -273,6 +324,11 @@ const PostText = styled.p`
   font-size: 14px;
   line-height: 1.5;
   text-align: left;
+  
+  @media (max-width: 768px) {
+    font-size: 15px;
+    line-height: 1.4;
+  }
 `;
 
 const PostImage = styled.img`
@@ -287,6 +343,11 @@ const PostActions = styled.div`
   gap: 20px;
   padding: 10px 15px;
   border-top: 1px solid #e4e6eb;
+  
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    gap: 24px;
+  }
 `;
 
 const ActionGroup = styled.div`
@@ -325,6 +386,16 @@ const ActionButton = styled.button`
     background-color: #f0f2f5;
     border-radius: 4px;
   }
+  
+  @media (max-width: 768px) {
+    padding: 10px 8px;
+    font-size: 15px;
+    justify-content: center;
+    
+    &:hover {
+      background-color: transparent;
+    }
+  }
 `;
 
 const ActionIcon = styled.span`
@@ -342,6 +413,12 @@ const StoryContainer = styled.div`
   &::-webkit-scrollbar {
     display: none;
   }
+  
+  @media (max-width: 768px) {
+    gap: 8px;
+    padding: 8px 0;
+    margin-bottom: 8px;
+  }
 `;
 
 const StoryCard = styled.div`
@@ -352,6 +429,103 @@ const StoryCard = styled.div`
   position: relative;
   cursor: pointer;
   border: 2px solid ${props => props.active ? '#4a6cf7' : 'transparent'};
+  
+  @media (max-width: 768px) {
+    min-width: 100px;
+    height: 160px;
+    border-radius: 12px;
+  }
+`;
+
+// Mobile Navigation Bar
+const MobileNavBar = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: #fff;
+    border-top: 1px solid #e4e6eb;
+    padding: 12px 20px 25px 20px;
+    z-index: 9999;
+    justify-content: space-around;
+    align-items: center;
+    height: 80px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const NavItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8e8e93;
+  font-size: 10px;
+  cursor: pointer;
+  min-width: 50px;
+  gap: 4px;
+  
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  span {
+    font-weight: 400;
+    margin-top: 2px;
+    text-align: center;
+  }
+  
+  &.add-button {
+    position: relative;
+    top: -15px;
+    
+    span {
+      display: none;
+    }
+  }
+`;
+
+// Mobile Header
+const MobileHeader = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-bottom: 1px solid #e4e6eb;
+    padding: 12px 16px;
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    height: 56px;
+  }
+`;
+
+const AppLogo = styled.h1`
+  color: #1877f2;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+`;
+
+// Mobile Content Container
+const MobileContentContainer = styled.div`
+  @media (max-width: 768px) {
+    padding-top: 56px;
+    padding-bottom: 100px;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+  }
 `;
 
 const StoryImage = styled.img`
@@ -428,7 +602,7 @@ const Beranda = () => {
       }
       
       try {
-        const response = await axios.get('http://localhost:5000/api/posts', {
+        const response = await axios.get('http://localhost:5001/api/posts', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -494,7 +668,7 @@ const Beranda = () => {
       
       // Kirim request ke backend
       if (updatedPosts.find(post => post.id_post === postId)?.isLiked) {
-        await axios.post('http://localhost:5000/api/likes', {
+        await axios.post('http://localhost:5001/api/likes', {
           id_post: postId
         }, {
           headers: {
@@ -502,7 +676,7 @@ const Beranda = () => {
           }
         });
       } else {
-        await axios.delete(`http://localhost:5000/api/likes/${postId}`, {
+        await axios.delete(`http://localhost:5001/api/likes/${postId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -534,7 +708,7 @@ const Beranda = () => {
         formData.append('media', selectedMedia);
       }
       
-      await axios.post('http://localhost:5000/api/posts', formData, {
+      await axios.post('http://localhost:5001/api/posts', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -587,7 +761,7 @@ const Beranda = () => {
       }
   
       await axios.post(
-        `http://localhost:5000/api/comments/post/${postId}`,
+        `http://localhost:5001/api/comments/post/${postId}`,
         { isi_komentar: commentText },
         {
           headers: {
@@ -618,7 +792,7 @@ const Beranda = () => {
     setCommentPage(1);
     
     try {
-      const response = await axios.get(`http://localhost:5000/api/comments/post/${postId}`);
+      const response = await axios.get(`http://localhost:5001/api/comments/post/${postId}`);
       setAllComments(response.data.data || []);
       setHasMoreComments(response.data.currentPage < response.data.totalPages);
     } catch (err) {
@@ -636,7 +810,7 @@ const Beranda = () => {
     const nextPage = commentPage + 1;
     
     try {
-      const response = await axios.get(`http://localhost:5000/api/comments/post/${selectedPostId}?page=${nextPage}&limit=10`);
+      const response = await axios.get(`http://localhost:5001/api/comments/post/${selectedPostId}?page=${nextPage}&limit=10`);
       setAllComments(prev => [...prev, ...(response.data.data || [])]);
       setCommentPage(nextPage);
       setHasMoreComments(response.data.currentPage < response.data.totalPages);
@@ -667,7 +841,7 @@ const Beranda = () => {
       }
 
       await axios.post(
-        `http://localhost:5000/api/comments/post/${selectedPostId}`,
+        `http://localhost:5001/api/comments/post/${selectedPostId}`,
         { isi_komentar: modalCommentInput },
         {
           headers: {
@@ -697,6 +871,13 @@ const Beranda = () => {
   
   return (
     <div>
+      {/* Mobile Header */}
+      <MobileHeader>
+        <AppLogo>ConnectHub</AppLogo>
+      </MobileHeader>
+      
+      {/* Mobile Content Container */}
+      <MobileContentContainer>
       <ContentWrapper>
         <StoryContainer>
           {stories.map(story => (
@@ -776,7 +957,7 @@ const Beranda = () => {
               )}
               
               {post.media && (
-                <PostImage src={`http://localhost:5000${post.media}`} alt="Post" />
+                <PostImage src={`http://localhost:5001${post.media}`} alt="Post" />
               )}
               
               <PostActions>
@@ -987,6 +1168,53 @@ const Beranda = () => {
           </ModalContent>
         </ModalOverlay>
       )}
+      </MobileContentContainer>
+      
+      {/* Mobile Navigation Bar */}
+      <MobileNavBar>
+        <NavItem>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+          <span>Beranda</span>
+        </NavItem>
+        <NavItem>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          <span>Menu</span>
+        </NavItem>
+        <NavItem className="add-button">
+          <div style={{
+            backgroundColor: '#00D4AA',
+            borderRadius: '50%',
+            width: '56px',
+            height: '56px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: '-20px',
+            boxShadow: '0 4px 12px rgba(0, 212, 170, 0.3)',
+            border: '3px solid #fff'
+          }}>
+            <svg viewBox="0 0 24 24" fill="white" style={{width: '24px', height: '24px'}}>
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+          </div>
+        </NavItem>
+        <NavItem>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+          </svg>
+          <span>Notifikasi</span>
+        </NavItem>
+        <NavItem>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+          <span>Profil</span>
+        </NavItem>
+      </MobileNavBar>
     </div>
   );
 };
