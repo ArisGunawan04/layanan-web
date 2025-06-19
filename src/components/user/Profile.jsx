@@ -268,6 +268,8 @@ const Profile = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
   
   // Effect untuk memperbarui data user dari localStorage
   useEffect(() => {
@@ -313,15 +315,21 @@ const Profile = () => {
         if (!userId && currentUserData) {
           targetUserId = currentUserData.id;
           setUser(currentUserData);
+          // Reset image states untuk profil sendiri
+          setImageLoading(true);
+          setImageError(false);
         } else if (userId) {
-          const userResponse = await axios.get(`http://localhost:5001/api/users/${userId}`, {
+          const userResponse = await axios.get(`http://localhost:5000/api/users/${userId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUser(userResponse.data.data);
+          // Reset image states untuk profil lain
+          setImageLoading(true);
+          setImageError(false);
         }
         
         if (targetUserId) {
-          const postsResponse = await axios.get(`http://localhost:5001/api/posts/user/${targetUserId}`, {
+          const postsResponse = await axios.get(`http://localhost:5000/api/posts/user/${targetUserId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setPosts(Array.isArray(postsResponse.data) ? postsResponse.data : postsResponse.data?.data || []);
@@ -344,10 +352,10 @@ const Profile = () => {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
         
-        const followersRes = await axios.get(`http://localhost:5001/api/follow/${user.id}/followers/count`, { headers });
+        const followersRes = await axios.get(`http://localhost:5000/api/follow/${user.id}/followers/count`, { headers });
         setFollowersCount(followersRes.data.count);
         
-        const followingRes = await axios.get(`http://localhost:5001/api/follow/${user.id}/following/count`, { headers });
+        const followingRes = await axios.get(`http://localhost:5000/api/follow/${user.id}/following/count`, { headers });
         setFollowingCount(followingRes.data.count);
       } catch (err) {
         console.error('Error fetching follow counts:', err);
@@ -399,11 +407,15 @@ const Profile = () => {
           <ProfileInfo>
             <AvatarContainer>
               <Avatar 
-                src={user.foto_profil ? `http://localhost:5001${user.foto_profil}` : '/src/assets/default-avatar.png'} 
+                src={imageError ? '/default-avatar.svg' : (user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg')}
                 alt={user.name}
+                onLoad={() => setImageLoading(false)}
                 onError={(e) => {
-                  e.target.src = '/src/assets/default-avatar.png';
+                  setImageError(true);
+                  setImageLoading(false);
+                  e.target.src = '/default-avatar.svg';
                 }}
+                style={{ opacity: imageLoading ? 0.5 : 1, transition: 'opacity 0.3s ease' }}
               />
               {isOwnProfile && (
                 <EditAvatarButton>
@@ -459,7 +471,7 @@ const Profile = () => {
                 <PostCard key={post.id || post.id_post}>
                   {post.media && (
                     <PostImage 
-                      src={`http://localhost:5001${post.media}`} 
+                      src={`http://localhost:5000${post.media}`}
                       alt="Post media"
                       onError={(e) => {
                         e.target.style.display = 'none';

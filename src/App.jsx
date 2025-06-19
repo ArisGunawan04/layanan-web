@@ -92,12 +92,16 @@ function App() {
           } />
           <Route path="/edit-profil" element={
             <ProtectedRoute>
-              <EditProfile />
+              <Layout>
+                <EditProfile />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/keamanan" element={
             <ProtectedRoute>
-              <Security />
+              <Layout>
+                <Security />
+              </Layout>
             </ProtectedRoute>
           } />
         
