@@ -1,7 +1,7 @@
 // Konfigurasi API untuk aplikasi
 const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001',
-  SOCKET_URL: import.meta.env.VITE_SOCKET_URL || 'http://localhost:5001',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
+  SOCKET_URL: import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000',
   ENDPOINTS: {
     AUTH: {
       LOGIN: '/api/auth/login',
@@ -23,6 +23,13 @@ const API_CONFIG = {
     LIKES: {
       BASE: '/api/likes',
       BY_POST: (postId) => `/api/likes/${postId}`
+    },
+    STORIES: {
+      BASE: '/api/stories',
+      BY_ID: (storyId) => `/api/stories/${storyId}`,
+      USER_STORIES: (userId) => `/api/stories/user/${userId}`,
+      VIEW_STORY: (storyId) => `/api/stories/${storyId}/view`,
+      UPLOAD: '/api/stories/upload'
     },
     CHATS: {
       BASE: '/api/chats',

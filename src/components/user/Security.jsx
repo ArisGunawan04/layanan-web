@@ -7,13 +7,23 @@ import axios from 'axios';
 // Styled Components
 const Container = styled.div`
   display: flex;
-  min-height: 100vh;
+  min-height: calc(100vh - 40px);
+  margin-left: 220px;
   background-color: #f8f9fa;
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
 `;
 
 const MainContent = styled.div`
   flex: 1;
   display: flex;
+  max-width: calc(100vw - 470px);
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
 `;
 
 const SettingsSidebar = styled.div`
@@ -21,6 +31,7 @@ const SettingsSidebar = styled.div`
   background-color: white;
   border-right: 1px solid #e9ecef;
   padding: 20px;
+  min-height: calc(100vh - 40px);
 `;
 
 const SidebarTitle = styled.h3`
@@ -246,7 +257,7 @@ const Security = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        'http://localhost:5001/api/security/change-email',
+        'http://localhost:5000/api/security/change-email',
         emailData,
         {
           headers: {
@@ -289,7 +300,7 @@ const Security = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        'http://localhost:5001/api/security/change-password',
+        'http://localhost:5000/api/security/change-password',
         passwordData,
         {
           headers: {

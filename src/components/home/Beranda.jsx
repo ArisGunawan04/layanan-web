@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaHeart, FaRegHeart, FaComment, FaEllipsisH, FaTimes } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaComment, FaEllipsisH, FaTimes, FaPlus } from 'react-icons/fa';
 import axios from 'axios';
+import CreateStory from './CreateStory';
+import StoryViewer from './StoryViewer';
 
 const ContentWrapper = styled.div`
   max-width: 750px;
@@ -565,12 +567,11 @@ const Beranda = () => {
   const [hasMoreComments, setHasMoreComments] = useState(false);
   const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   
-  // Contoh data story
-  const stories = [
-    { id: 1, user: 'Jon Snow', image: 'https://i.imgur.com/7vQD0fPs.jpg' },
-    { id: 2, user: 'Daenerys', image: 'https://i.imgur.com/4KeKvtH.png' },
-    { id: 3, user: 'Man Utd', image: 'https://i.imgur.com/ZXOvx4a.png' }
-  ];
+  const [stories, setStories] = useState([]);
+  const [showCreateStory, setShowCreateStory] = useState(false);
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
+  const [selectedUserIndex, setSelectedUserIndex] = useState(0);
   
   useEffect(() => {
     // Ambil data user dari localStorage
@@ -584,8 +585,9 @@ const Beranda = () => {
       }
     }
     
-    // Ambil data posts dari API
+    // Ambil data posts dan stories dari API
     fetchPosts();
+    fetchStories();
   }, []);
   
   const fetchPosts = async () => {
@@ -602,7 +604,7 @@ const Beranda = () => {
       }
       
       try {
-        const response = await axios.get('http://localhost:5001/api/posts', {
+        const response = await axios.get('http://localhost:5000/api/posts', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -625,6 +627,23 @@ const Beranda = () => {
       setError(err.message);
       setLoading(false);
       console.error('Error dalam fungsi fetchPosts:', err);
+    }
+  };
+  
+  const fetchStories = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const response = await axios.get('http://localhost:5000/api/stories', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      setStories(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
     }
   };
   
@@ -668,7 +687,7 @@ const Beranda = () => {
       
       // Kirim request ke backend
       if (updatedPosts.find(post => post.id_post === postId)?.isLiked) {
-        await axios.post('http://localhost:5001/api/likes', {
+        await axios.post('http://localhost:5000/api/likes', {
           id_post: postId
         }, {
           headers: {
@@ -676,7 +695,7 @@ const Beranda = () => {
           }
         });
       } else {
-        await axios.delete(`http://localhost:5001/api/likes/${postId}`, {
+        await axios.delete(`http://localhost:5000/api/likes/${postId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -708,7 +727,7 @@ const Beranda = () => {
         formData.append('media', selectedMedia);
       }
       
-      await axios.post('http://localhost:5001/api/posts', formData, {
+      await axios.post('http://localhost:5000/api/posts', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -761,7 +780,7 @@ const Beranda = () => {
       }
   
       await axios.post(
-        `http://localhost:5001/api/comments/post/${postId}`,
+        `http://localhost:5000/api/comments/post/${postId}`,
         { isi_komentar: commentText },
         {
           headers: {
@@ -792,7 +811,7 @@ const Beranda = () => {
     setCommentPage(1);
     
     try {
-      const response = await axios.get(`http://localhost:5001/api/comments/post/${postId}`);
+      const response = await axios.get(`http://localhost:5000/api/comments/post/${postId}`);
       setAllComments(response.data.data || []);
       setHasMoreComments(response.data.currentPage < response.data.totalPages);
     } catch (err) {
@@ -810,7 +829,7 @@ const Beranda = () => {
     const nextPage = commentPage + 1;
     
     try {
-      const response = await axios.get(`http://localhost:5001/api/comments/post/${selectedPostId}?page=${nextPage}&limit=10`);
+      const response = await axios.get(`http://localhost:5000/api/comments/post/${selectedPostId}?page=${nextPage}&limit=10`);
       setAllComments(prev => [...prev, ...(response.data.data || [])]);
       setCommentPage(nextPage);
       setHasMoreComments(response.data.currentPage < response.data.totalPages);
@@ -841,7 +860,7 @@ const Beranda = () => {
       }
 
       await axios.post(
-        `http://localhost:5001/api/comments/post/${selectedPostId}`,
+        `http://localhost:5000/api/comments/post/${selectedPostId}`,
         { isi_komentar: modalCommentInput },
         {
           headers: {
@@ -878,12 +897,88 @@ const Beranda = () => {
       
       {/* Mobile Content Container */}
       <MobileContentContainer>
+      
+      {/* Create Story Modal */}
+      <CreateStory 
+        isOpen={showCreateStory}
+        onClose={() => setShowCreateStory(false)}
+        onStoryCreated={fetchStories}
+      />
+      
+      {/* Story Viewer */}
+      <StoryViewer 
+        isOpen={showStoryViewer}
+        onClose={() => setShowStoryViewer(false)}
+        stories={stories}
+        initialStoryIndex={selectedStoryIndex}
+        initialUserIndex={selectedUserIndex}
+        currentUser={user}
+      />
       <ContentWrapper>
         <StoryContainer>
-          {stories.map(story => (
-            <StoryCard key={story.id}>
-              <StoryImage src={story.image} alt={story.user} />
-              <StoryUser>{story.user}</StoryUser>
+          {/* Create Story Card */}
+          <StoryCard onClick={() => setShowCreateStory(true)} style={{ cursor: 'pointer' }}>
+            <div style={{
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(45deg, #4a6cf7, #6c5ce7)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              position: 'relative'
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: '12px',
+                left: '12px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <FaPlus size={16} />
+              </div>
+              <div style={{
+                fontSize: '12px',
+                fontWeight: '600',
+                position: 'absolute',
+                bottom: '12px',
+                left: '12px',
+                right: '12px',
+                textAlign: 'center'
+              }}>
+                Buat Story
+              </div>
+            </div>
+          </StoryCard>
+          
+          {/* User Stories */}
+          {stories.map((userStory, userIndex) => (
+            <StoryCard 
+              key={userStory.user.user_id} 
+              onClick={() => {
+                setSelectedUserIndex(userIndex);
+                setSelectedStoryIndex(0);
+                setShowStoryViewer(true);
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <StoryImage 
+                src={userStory.stories[0]?.media ? 
+                  `http://localhost:5000${userStory.stories[0].media}` : 
+                  "/default-avatar.svg"
+                } 
+                alt={userStory.user.name}
+                onError={(e) => {
+                  e.target.src = '/default-avatar.svg';
+                }}
+              />
+              <StoryUser>{userStory.user.name}</StoryUser>
             </StoryCard>
           ))}
         </StoryContainer>
@@ -891,7 +986,7 @@ const Beranda = () => {
         <CreatePostCard>
           <CreatePostForm>
             <PostInputRow>
-              <ProfilePic src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "https://via.placeholder.com/40"} alt="Profile" />
+              <ProfilePic src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"} alt="Profile" />
               <PostInput 
                 placeholder="Apa yang sedang Anda pikirkan?" 
                 value={newPostText}
@@ -937,7 +1032,7 @@ const Beranda = () => {
               <PostHeader>
                 <PostUser>
                   <ProfilePic 
-                    src={post.User?.foto_profil ? `http://localhost:5000${post.User.foto_profil}` : "https://via.placeholder.com/40"} 
+                    src={post.User?.foto_profil ? `http://localhost:5000${post.User.foto_profil}` : "/default-avatar.svg"} 
                     alt={post.User?.name} 
                   />
                   <UserInfo>
@@ -957,7 +1052,7 @@ const Beranda = () => {
               )}
               
               {post.media && (
-                <PostImage src={`http://localhost:5001${post.media}`} alt="Post" />
+                <PostImage src={`http://localhost:5000${post.media}`} alt="Post" />
               )}
               
               <PostActions>
@@ -991,7 +1086,7 @@ const Beranda = () => {
                 {post.Komentars?.slice(0, 2).map((comment, index) => (
                   <div key={index} style={{ display: 'flex', marginTop: '10px' }}>
                     <img
-                      src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "https://via.placeholder.com/30"}
+                      src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "/default-avatar.svg"}
                       alt={comment.User?.name}
                       style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
                     />
@@ -1017,7 +1112,7 @@ const Beranda = () => {
                 {/* Input Komentar Baru */}
                 <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
                   <img
-                    src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "https://via.placeholder.com/30"}
+                    src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"}
                     alt="Profile"
                     style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
                   />
@@ -1087,7 +1182,7 @@ const Beranda = () => {
                   {allComments.map((comment, index) => (
                     <div key={index} style={{ display: 'flex', marginBottom: '15px' }}>
                       <img
-                        src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "https://via.placeholder.com/40"}
+                        src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "/default-avatar.svg"}
                         alt={comment.User?.name}
                         style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '12px' }}
                       />
@@ -1127,7 +1222,7 @@ const Beranda = () => {
             <div style={{ padding: '15px 20px', borderTop: '1px solid #e4e6eb' }}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <img
-                  src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "https://via.placeholder.com/35"}
+                  src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"}
                   alt="Profile"
                   style={{ width: '35px', height: '35px', borderRadius: '50%', marginRight: '10px' }}
                 />
