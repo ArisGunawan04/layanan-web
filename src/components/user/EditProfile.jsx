@@ -6,9 +6,13 @@ import axios from 'axios';
 
 const Container = styled.div`
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  min-height: calc(100vh - 40px);
+  margin-left: 220px;
   background: white;
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
 `;
 
 const MainContent = styled.div`
@@ -17,6 +21,11 @@ const MainContent = styled.div`
   flex-direction: column;
   padding: 30px;
   overflow-y: auto;
+  max-width: calc(100vw - 470px);
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
 `;
 
 
@@ -26,7 +35,7 @@ const SettingsSidebar = styled.div`
   background: #f8f9fa;
   border-right: 1px solid #e0e0e0;
   padding: 20px;
-  height: 100vh;
+  min-height: calc(100vh - 40px);
   overflow-y: auto;
 `;
 
@@ -303,7 +312,7 @@ const EditProfile = () => {
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5001/api/users/profile', {
+      const response = await axios.get('http://localhost:5000/api/users/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -317,9 +326,9 @@ const EditProfile = () => {
       
       // Set avatar preview langsung tanpa delay
       if (userData.foto_profil) {
-        setAvatarPreview(`http://localhost:5001${userData.foto_profil}`);
+        setAvatarPreview(`http://localhost:5000${userData.foto_profil}`);
       } else {
-        setAvatarPreview('/src/assets/default-avatar.png');
+        setAvatarPreview('/default-avatar.svg');
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -370,7 +379,7 @@ const EditProfile = () => {
         submitData.append('foto_profil', formData.foto_profil);
       }
 
-      const response = await axios.put('http://localhost:5001/api/users/profile', submitData, {
+      const response = await axios.put('http://localhost:5000/api/users/profile', submitData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -430,10 +439,10 @@ const EditProfile = () => {
             <AvatarSection>
               <AvatarContainer>
                 <Avatar 
-                  src={avatarPreview || (formData.name ? `http://localhost:5001/uploads/profiles/default-avatar.png` : '/src/assets/default-avatar.png')} 
+                  src={avatarPreview || '/default-avatar.svg'}
                   alt="Avatar"
                   onError={(e) => {
-                    e.target.src = '/src/assets/default-avatar.png';
+                    e.target.src = '/default-avatar.svg';
                   }}
                 />
                 <AvatarUpload htmlFor="avatar-upload">
