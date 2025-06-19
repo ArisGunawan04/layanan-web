@@ -125,7 +125,7 @@ const Notifikasi = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      const response = await axios.get('http://localhost:5001/api/notifications', {
+      const response = await axios.get('http://localhost:5000/api/notifications', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -148,7 +148,7 @@ const Notifikasi = () => {
           user: {
             name: 'sudibjo pramono',
             username: 'sudibjo_pramono',
-            foto_profil: 'https://via.placeholder.com/50'
+            foto_profil: '/default-avatar.svg'
           },
           message: 'mulai mengikuti Anda',
           time: '2 jam yang lalu',
@@ -160,7 +160,7 @@ const Notifikasi = () => {
           user: {
             name: 'sudibjo pramono',
             username: 'sudibjo_pramono', 
-            foto_profil: 'https://via.placeholder.com/50'
+            foto_profil: '/default-avatar.svg'
           },
           message: 'menyukai postingan Anda "glory glory man utd"',
           time: '5 jam yang lalu',
@@ -240,8 +240,11 @@ const Notifikasi = () => {
               onClick={() => handleNotificationClick(notification)}
             >
               <ProfileImage 
-                src={notification.user.foto_profil} 
+                src={notification.user.foto_profil ? `http://localhost:5000${notification.user.foto_profil}` : '/default-avatar.svg'} 
                 alt={notification.user.name}
+                onError={(e) => {
+                  e.target.src = '/default-avatar.svg';
+                }}
               />
               <NotifikasiContent>
                 <NotifikasiText>

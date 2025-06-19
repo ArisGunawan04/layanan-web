@@ -99,11 +99,11 @@ const UserCard = ({ user, showStats = true, showActions = true }) => {
     <Card>
       <UserInfo>
         <Avatar 
-          src={user.foto_profil ? `http://localhost:5000/uploads/${user.foto_profil}` : '/default-avatar.png'}
-          alt={user.name}
-          onError={(e) => {
-            e.target.src = '/default-avatar.png';
-          }}
+        src={user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg'}
+        alt={user.name}
+        onError={(e) => {
+          e.target.src = '/default-avatar.svg';
+        }}
         />
         <UserDetails>
           <UserName>{user.name}</UserName>
