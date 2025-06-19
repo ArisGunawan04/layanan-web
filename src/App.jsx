@@ -10,6 +10,7 @@ import Notifikasi from './components/Notifikasi';
 import Profile from './components/user/Profile';
 import EditProfile from './components/user/EditProfile';
 import Security from './components/user/Security';
+import UserList from './components/user/UserList';
 
 // Komponen untuk rute yang memerlukan autentikasi
 const ProtectedRoute = ({ children }) => {
@@ -104,11 +105,18 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
+          <Route path="/users" element={
+            <ProtectedRoute>
+              <Layout>
+                <UserList />
+              </Layout>
+            </ProtectedRoute>
+          } />
         
           {/* Redirect ke beranda jika sudah login, ke login jika belum */}
           <Route path="/" element={
-            isAuthenticated ? 
-            <Navigate to="/beranda" replace /> : 
+            isAuthenticated ?
+            <Navigate to="/beranda" replace /> :
             <Navigate to="/login" replace />
           } />
         </Routes>
