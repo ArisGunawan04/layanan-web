@@ -234,6 +234,12 @@ const StoryViewer = ({
     setProgress(0);
   }, [currentStoryIndex, currentUserIndex]);
 
+  // Update state when props change
+  useEffect(() => {
+    setCurrentUserIndex(initialUserIndex);
+    setCurrentStoryIndex(initialStoryIndex);
+  }, [initialUserIndex, initialStoryIndex, isOpen]);
+
   const nextStory = () => {
     if (currentStoryIndex < currentUserStories.stories.length - 1) {
       setCurrentStoryIndex(prev => prev + 1);
@@ -328,7 +334,10 @@ const StoryViewer = ({
                   `http://localhost:5000${currentUserStories.user.foto_profil}` : 
                   "/default-avatar.svg"
                 } 
-                alt={currentUserStories.user.name} 
+                alt={currentUserStories.user.name}
+                onError={(e) => {
+                  e.target.src = '/default-avatar.svg';
+                }}
               />
               <div>
                 <UserName>{currentUserStories.user.name}</UserName>

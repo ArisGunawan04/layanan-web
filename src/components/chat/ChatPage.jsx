@@ -320,7 +320,14 @@ const ChatPage = () => {
                 onClick={() => handleUserSelect(user)}
                 className={selectedUser && selectedUser.user_id === user.user_id ? 'active' : ''}
               >
-                <img src={user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg'} alt={user.username} className="profile-pic" />
+                <img 
+                  src={user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg'} 
+                  alt={user.username} 
+                  className="profile-pic"
+                  onError={(e) => {
+                    e.target.src = '/default-avatar.svg';
+                  }}
+                />
                 <div className="user-status-container">
                   <span>{user.username}</span>
                   <div className="user-status">
@@ -340,7 +347,14 @@ const ChatPage = () => {
         {selectedUser ? (
           <>
             <div className="chat-header">
-              <img src={selectedUser.foto_profil ? `http://localhost:5000${selectedUser.foto_profil}` : '/default-avatar.svg'} alt={selectedUser.username} className="profile-pic" />
+              <img 
+                  src={selectedUser.foto_profil ? `http://localhost:5000${selectedUser.foto_profil}` : '/default-avatar.svg'} 
+                  alt={selectedUser.username} 
+                  className="profile-pic"
+                  onError={(e) => {
+                    e.target.src = '/default-avatar.svg';
+                  }}
+                />
               <div className="user-status-container">
                 <h3>{selectedUser.username}</h3>
                 <div className="user-status">
