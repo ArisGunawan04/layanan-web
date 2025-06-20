@@ -345,23 +345,23 @@ const Profile = () => {
     fetchUserDataAndPosts();
   }, [userId]);
   
+  const fetchFollowCounts = async () => {
+    if (!user) return;
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const followersRes = await axios.get(`http://localhost:5000/api/follow/${user.id}/followers/count`, { headers });
+      setFollowersCount(followersRes.data.count);
+      
+      const followingRes = await axios.get(`http://localhost:5000/api/follow/${user.id}/following/count`, { headers });
+      setFollowingCount(followingRes.data.count);
+    } catch (err) {
+      console.error('Error fetching follow counts:', err);
+    }
+  };
+  
   useEffect(() => {
-    const fetchFollowCounts = async () => {
-      if (!user) return;
-      try {
-        const token = localStorage.getItem('token');
-        const headers = { Authorization: `Bearer ${token}` };
-        
-        const followersRes = await axios.get(`http://localhost:5000/api/follow/${user.id}/followers/count`, { headers });
-        setFollowersCount(followersRes.data.count);
-        
-        const followingRes = await axios.get(`http://localhost:5000/api/follow/${user.id}/following/count`, { headers });
-        setFollowingCount(followingRes.data.count);
-      } catch (err) {
-        console.error('Error fetching follow counts:', err);
-      }
-    };
-    
     fetchFollowCounts();
   }, [user]); // Jalankan ulang ketika objek user berubah
   
