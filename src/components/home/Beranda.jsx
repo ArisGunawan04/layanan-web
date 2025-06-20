@@ -1172,23 +1172,89 @@ const Beranda = () => {
       {/* Modal Komentar */}
       {showCommentsModal && (
         <ModalOverlay onClick={closeCommentsModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px', width: '90%', height: '80vh', display: 'flex', flexDirection: 'column' }}>
             <ModalHeader>
-              <ModalTitle>Komentar</ModalTitle>
+              <ModalTitle>Postingan</ModalTitle>
               <CloseButton onClick={closeCommentsModal}>
                 <FaTimes />
               </CloseButton>
             </ModalHeader>
             
-            <ModalBody 
-              onScroll={(e) => {
-                const { scrollTop, scrollHeight, clientHeight } = e.target;
-                if (scrollHeight - scrollTop === clientHeight && hasMoreComments && !loadingMoreComments) {
-                  loadMoreComments();
-                }
-              }}
-              style={{ maxHeight: '400px', overflowY: 'auto' }}
-            >
+            {/* Layout Dua Kolom */}
+            <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+              {/* Kolom Kiri - Postingan */}
+              <div style={{ flex: '1', borderRight: '1px solid #e4e6eb', display: 'flex', flexDirection: 'column' }}>
+                {(() => {
+                  const selectedPost = posts.find(post => post.id_post === selectedPostId);
+                  if (!selectedPost) return <div>Postingan tidak ditemukan</div>;
+                  
+                  return (
+                    <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                      {/* Header Post */}
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                        <img
+                          src={selectedPost.User?.foto_profil ? `http://localhost:5000${selectedPost.User.foto_profil}` : "/default-avatar.svg"}
+                          alt={selectedPost.User?.name}
+                          onError={(e) => {
+                            e.target.src = '/default-avatar.svg';
+                          }}
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '12px' }}
+                        />
+                        <div>
+                          <div style={{ fontWeight: '600', fontSize: '14px' }}>{selectedPost.User?.name}</div>
+                          <div style={{ fontSize: '12px', color: '#65676b' }}>{formatTime(selectedPost.createdAt)}</div>
+                        </div>
+                      </div>
+                      
+                      {/* Caption */}
+                      {selectedPost.caption && (
+                        <div style={{ marginBottom: '15px', fontSize: '14px', lineHeight: '1.4' }}>
+                          {selectedPost.caption}
+                        </div>
+                      )}
+                      
+                      {/* Media */}
+                      {selectedPost.media && (
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa', borderRadius: '8px', overflow: 'hidden' }}>
+                          {selectedPost.media.includes('.mp4') || selectedPost.media.includes('.mov') ? (
+                            <video
+                              src={`http://localhost:5000${selectedPost.media}`}
+                              controls
+                              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                            />
+                          ) : (
+                            <img
+                              src={`http://localhost:5000${selectedPost.media}`}
+                              alt="Post media"
+                              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                            />
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Post Stats */}
+                      <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #e4e6eb' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '14px', color: '#65676b' }}>
+                          <span>{selectedPost.likes_count || 0} suka</span>
+                          <span>{selectedPost.comments_count || 0} komentar</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+              
+              {/* Kolom Kanan - Komentar */}
+              <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
+                <ModalBody 
+                  onScroll={(e) => {
+                    const { scrollTop, scrollHeight, clientHeight } = e.target;
+                    if (scrollHeight - scrollTop === clientHeight && hasMoreComments && !loadingMoreComments) {
+                      loadMoreComments();
+                    }
+                  }}
+                  style={{ flex: 1, overflowY: 'auto', padding: '20px' }}
+                >
               {loadingComments ? (
                 <div style={{ textAlign: 'center', padding: '20px' }}>Memuat komentar...</div>
               ) : (
@@ -1281,7 +1347,9 @@ const Beranda = () => {
                 </button>
               </div>
             </div>
-          </ModalContent>
+          </div>
+        </div>
+      </ModalContent>
         </ModalOverlay>
       )}
       </MobileContentContainer>
