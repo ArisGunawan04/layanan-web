@@ -773,13 +773,46 @@ const Beranda = () => {
     const commentText = newCommentInput[postId]?.trim();
     if (!commentText) return;
   
+    // Optimistic update - tambahkan komentar langsung ke UI
+    const optimisticComment = {
+      id_komentar: `temp-${Date.now()}`,
+      isi_komentar: commentText,
+      createdAt: new Date().toISOString(),
+      User: {
+        id_user: user?.id_user,
+        name: user?.name,
+        foto_profil: user?.foto_profil
+      }
+    };
+    
+    // Update posts dengan komentar baru
+    setPosts(prevPosts => 
+      prevPosts.map(post => {
+        if (post.id_post === postId) {
+          const updatedKomentars = post.Komentars ? [optimisticComment, ...post.Komentars] : [optimisticComment];
+          return {
+            ...post,
+            Komentars: updatedKomentars,
+            commentCount: (post.commentCount || 0) + 1
+          };
+        }
+        return post;
+      })
+    );
+    
+    // Reset input
+    setNewCommentInput(prev => ({
+      ...prev,
+      [postId]: ''
+    }));
+  
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Token tidak ditemukan');
       }
   
-      await axios.post(
+      const response = await axios.post(
         `http://localhost:5000/api/comments/post/${postId}`,
         { isi_komentar: commentText },
         {
@@ -788,19 +821,53 @@ const Beranda = () => {
           }
         }
       );
-  
-      // Reset input
-      setNewCommentInput(prev => ({
-        ...prev,
-        [postId]: ''
-      }));
-  
-      // Refresh posts untuk menampilkan komentar baru
-      fetchPosts();
+      
+      // Update komentar optimistic dengan data real dari server
+      if (response.data && response.data.data) {
+        setPosts(prevPosts => 
+          prevPosts.map(post => {
+            if (post.id_post === postId) {
+              const updatedKomentars = post.Komentars?.map(comment => 
+                comment.id_komentar === optimisticComment.id_komentar 
+                  ? response.data.data 
+                  : comment
+              );
+              return {
+                ...post,
+                Komentars: updatedKomentars
+              };
+            }
+            return post;
+          })
+        );
+      }
   
     } catch (err) {
       console.error('Error submitting comment:', err);
       setError('Gagal mengirim komentar');
+      
+      // Rollback optimistic update jika error
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id_post === postId) {
+            const updatedKomentars = post.Komentars?.filter(comment => 
+              comment.id_komentar !== optimisticComment.id_komentar
+            );
+            return {
+              ...post,
+              Komentars: updatedKomentars,
+              commentCount: Math.max((post.commentCount || 1) - 1, 0)
+            };
+          }
+          return post;
+        })
+      );
+      
+      // Restore input text jika error
+      setNewCommentInput(prev => ({
+        ...prev,
+        [postId]: commentText
+      }));
     }
   };
 
@@ -853,30 +920,112 @@ const Beranda = () => {
   const submitModalComment = async () => {
     if (!modalCommentInput.trim() || !selectedPostId) return;
     
+    const commentText = modalCommentInput.trim();
+    
+    // Optimistic update - tambahkan komentar langsung ke UI
+    const optimisticComment = {
+      id_komentar: `temp-${Date.now()}`, // ID sementara
+      isi_komentar: commentText,
+      createdAt: new Date().toISOString(),
+      User: {
+        id_user: user?.id_user,
+        name: user?.name,
+        foto_profil: user?.foto_profil
+      }
+    };
+    
+    // Tambahkan komentar ke state langsung
+    setAllComments(prev => [optimisticComment, ...prev]);
+    setModalCommentInput(''); // Clear input
+    
+    // Update counter dan komentar di posts
+    setPosts(prevPosts => 
+      prevPosts.map(post => {
+        if (post.id_post === selectedPostId) {
+          const updatedKomentars = post.Komentars ? [optimisticComment, ...post.Komentars] : [optimisticComment];
+          return {
+            ...post,
+            Komentars: updatedKomentars,
+            commentCount: (post.commentCount || 0) + 1
+          };
+        }
+        return post;
+      })
+    );
+    
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Token tidak ditemukan');
       }
 
-      await axios.post(
+      const response = await axios.post(
         `http://localhost:5000/api/comments/post/${selectedPostId}`,
-        { isi_komentar: modalCommentInput },
+        { isi_komentar: commentText },
         {
           headers: {
             Authorization: `Bearer ${token}`
           }
         }
       );
-
-      setModalCommentInput(''); // Clear input
-      // Refresh komentar di modal
-      await openCommentsModal(selectedPostId);
-      // Refresh posts untuk update counter
-      fetchPosts();
+      
+      // Update komentar optimistic dengan data real dari server
+      if (response.data && response.data.data) {
+        setAllComments(prev => 
+          prev.map(comment => 
+            comment.id_komentar === optimisticComment.id_komentar 
+              ? response.data.data 
+              : comment
+          )
+        );
+        
+        // Update juga di posts state untuk sinkronisasi dengan beranda
+        setPosts(prevPosts => 
+          prevPosts.map(post => {
+            if (post.id_post === selectedPostId) {
+              const updatedKomentars = post.Komentars?.map(comment => 
+                comment.id_komentar === optimisticComment.id_komentar 
+                  ? response.data.data 
+                  : comment
+              );
+              return {
+                ...post,
+                Komentars: updatedKomentars
+              };
+            }
+            return post;
+          })
+        );
+      }
+      
     } catch (err) {
       console.error('Error submitting comment:', err);
       setError('Gagal mengirim komentar');
+      
+      // Rollback optimistic update jika error
+      setAllComments(prev => 
+        prev.filter(comment => comment.id_komentar !== optimisticComment.id_komentar)
+      );
+      
+      // Rollback counter dan komentar di posts
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id_post === selectedPostId) {
+            const updatedKomentars = post.Komentars?.filter(comment => 
+              comment.id_komentar !== optimisticComment.id_komentar
+            );
+            return {
+              ...post,
+              Komentars: updatedKomentars,
+              commentCount: Math.max((post.commentCount || 1) - 1, 0)
+            };
+          }
+          return post;
+        })
+      );
+      
+      // Restore input text jika error
+      setModalCommentInput(commentText);
     }
   };
   
@@ -1080,7 +1229,7 @@ const Beranda = () => {
                 
                 <ActionGroup>
                   <CountText>{post.commentCount || 0} komentar</CountText>
-                  <ActionButton>
+                  <ActionButton onClick={() => openCommentsModal(post.id_post)}>
                     <ActionIcon>
                       <FaComment />
                     </ActionIcon>
@@ -1114,12 +1263,7 @@ const Beranda = () => {
                   </div>
                 ))}
 
-                {/* Tombol Lihat Semua Komentar */}
-                {post.commentCount > 2 && (
-                  <ViewMoreButton onClick={() => openCommentsModal(post.id_post)}>
-                    Lihat semua {post.commentCount} komentar
-                  </ViewMoreButton>
-                )}
+
 
                 {/* Input Komentar Baru */}
                 <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
@@ -1235,8 +1379,8 @@ const Beranda = () => {
                       {/* Post Stats */}
                       <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #e4e6eb' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '14px', color: '#65676b' }}>
-                          <span>{selectedPost.likes_count || 0} suka</span>
-                          <span>{selectedPost.comments_count || 0} komentar</span>
+                          <span>{selectedPost.likeCount || 0} suka</span>
+                          <span>{selectedPost.commentCount || 0} komentar</span>
                         </div>
                       </div>
                     </div>
