@@ -986,7 +986,13 @@ const Beranda = () => {
         <CreatePostCard>
           <CreatePostForm>
             <PostInputRow>
-              <ProfilePic src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"} alt="Profile" />
+              <ProfilePic 
+                 src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"}
+                 alt="Profile"
+                 onError={(e) => {
+                   e.target.src = '/default-avatar.svg';
+                 }}
+               />
               <PostInput 
                 placeholder="Apa yang sedang Anda pikirkan?" 
                 value={newPostText}
@@ -1031,10 +1037,13 @@ const Beranda = () => {
             <PostCard key={post.id_post}>
               <PostHeader>
                 <PostUser>
-                  <ProfilePic 
-                    src={post.User?.foto_profil ? `http://localhost:5000${post.User.foto_profil}` : "/default-avatar.svg"} 
-                    alt={post.User?.name} 
-                  />
+                  <ProfilePic
+                src={post.User?.foto_profil ? `http://localhost:5000${post.User.foto_profil}` : "/default-avatar.svg"}
+                alt={post.User?.name}
+                onError={(e) => {
+                  e.target.src = '/default-avatar.svg';
+                }}
+              />
                   <UserInfo>
                     <UserName>{post.User?.name || "User"}</UserName>
                     <PostTime>{formatTime(post.createdAt)}</PostTime>
@@ -1086,8 +1095,11 @@ const Beranda = () => {
                 {post.Komentars?.slice(0, 2).map((comment, index) => (
                   <div key={index} style={{ display: 'flex', marginTop: '10px' }}>
                     <img
-                      src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "/default-avatar.svg"}
-                      alt={comment.User?.name}
+                       src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "/default-avatar.svg"}
+                       alt={comment.User?.name}
+                       onError={(e) => {
+                         e.target.src = '/default-avatar.svg';
+                       }}
                       style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
                     />
                     <div style={{ flex: 1 }}>
@@ -1114,6 +1126,9 @@ const Beranda = () => {
                   <img
                     src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"}
                     alt="Profile"
+                    onError={(e) => {
+                      e.target.src = '/default-avatar.svg';
+                    }}
                     style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
                   />
                   <div style={{ flex: 1, position: 'relative' }}>
@@ -1184,6 +1199,9 @@ const Beranda = () => {
                       <img
                         src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "/default-avatar.svg"}
                         alt={comment.User?.name}
+                        onError={(e) => {
+                          e.target.src = '/default-avatar.svg';
+                        }}
                         style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '12px' }}
                       />
                       <div style={{ flex: 1 }}>
@@ -1224,6 +1242,9 @@ const Beranda = () => {
                 <img
                   src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"}
                   alt="Profile"
+                  onError={(e) => {
+                    e.target.src = '/default-avatar.svg';
+                  }}
                   style={{ width: '35px', height: '35px', borderRadius: '50%', marginRight: '10px' }}
                 />
                 <div style={{ flex: 1, position: 'relative' }}>
