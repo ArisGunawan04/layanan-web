@@ -66,8 +66,8 @@ const MenuItem = styled.li`
 const MenuLink = styled.button`
   width: 100%;
   text-align: left;
-  background: ${props => props.active ? '#2A8BF2' : 'transparent'};
-  color: ${props => props.active ? 'white' : '#666'};
+  background: ${props => props.$active ? '#2A8BF2' : 'transparent'};
+  color: ${props => props.$active ? 'white' : '#666'};
   border: none;
   padding: 12px 16px;
   border-radius: 6px;
@@ -76,8 +76,8 @@ const MenuLink = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background: ${props => props.active ? '#1a7bd9' : '#e9ecef'};
-    color: ${props => props.active ? 'white' : '#333'};
+    background: ${props => props.$active ? '#1a7bd9' : '#e9ecef'};
+    color: ${props => props.$active ? 'white' : '#333'};
   }
 `;
 
@@ -361,7 +361,7 @@ const Security = () => {
               </MenuLink>
             </MenuItem>
             <MenuItem>
-              <MenuLink active={true}>
+              <MenuLink $active={true}>
                 Keamanan
               </MenuLink>
             </MenuItem>

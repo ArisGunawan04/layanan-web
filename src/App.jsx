@@ -10,7 +10,10 @@ import Notifikasi from './components/Notifikasi';
 import Profile from './components/user/Profile';
 import EditProfile from './components/user/EditProfile';
 import Security from './components/user/Security';
-import UserList from './components/user/UserList';
+import GroupList from './components/group/GroupList';
+import CreateGroup from './components/group/CreateGroup';
+import GroupDetail from './components/group/GroupDetail';
+import Jelajahi from './components/explore/Jelajahi';
 
 // Komponen untuk rute yang memerlukan autentikasi
 const ProtectedRoute = ({ children }) => {
@@ -77,6 +80,13 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
+          <Route path="/jelajahi" element={
+            <ProtectedRoute>
+              <Layout>
+                <Jelajahi />
+              </Layout>
+            </ProtectedRoute>
+          } />
           <Route path="/profil" element={
             <ProtectedRoute>
               <Layout>
@@ -105,10 +115,24 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
-          <Route path="/users" element={
+          <Route path="/groups" element={
             <ProtectedRoute>
               <Layout>
-                <UserList />
+                <GroupList />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/groups/create" element={
+            <ProtectedRoute>
+              <Layout>
+                <CreateGroup />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/groups/:id_group" element={
+            <ProtectedRoute>
+              <Layout>
+                <GroupDetail />
               </Layout>
             </ProtectedRoute>
           } />

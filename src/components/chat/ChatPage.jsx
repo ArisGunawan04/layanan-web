@@ -1,17 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import '../../App.css';
 import io from 'socket.io-client';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { FaEllipsisV, FaTrash, FaBan } from 'react-icons/fa';
+import { FaEllipsisV, FaTrash, FaBan, FaPlus, FaInfoCircle, FaUsers, FaUserTimes, FaCrown, FaUserShield } from 'react-icons/fa';
+import CreateGroup from '../group/CreateGroup'; // Import CreateGroup component
+import styled from 'styled-components';
 
 const ChatPage = () => {
   const [users, setUsers] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [activeTab, setActiveTab] = useState('pesan');
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const [showFilePopup, setShowFilePopup] = useState(false);
   const [selectedFileType, setSelectedFileType] = useState('');
@@ -25,52 +30,126 @@ const ChatPage = () => {
   const [confirmModalMessage, setConfirmModalMessage] = useState('');
   const [confirmModalAction, setConfirmModalAction] = useState(null);
   const { id_penerima: initialRecipientId } = useParams();
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [showGroupDetailModal, setShowGroupDetailModal] = useState(false);
+  const [groupDetailData, setGroupDetailData] = useState(null);
   const messagesEndRef = useRef(null);
   const socket = useRef(null);
+  const navigate = useNavigate();
   
-  // Fungsi untuk menentukan apakah pengguna online atau tidak
   const isUserOnline = (lastSeen) => {
-    if (!lastSeen || lastSeen === null || lastSeen === undefined) {
-      console.log('lastSeen tidak valid:', lastSeen);
-      return false;
-    }
-    
+    if (!lastSeen) return false;
     try {
       const lastSeenDate = new Date(lastSeen);
       const now = new Date();
       const diffInMinutes = (now - lastSeenDate) / (1000 * 60);
-      
-      console.log('User lastSeen:', lastSeen, 'diffInMinutes:', diffInMinutes);
-      return diffInMinutes < 5; // Online jika terakhir aktif kurang dari 5 menit yang lalu
+      return diffInMinutes < 5;
     } catch (error) {
       console.error('Error parsing lastSeen date:', error);
       return false;
     }
   };
   
-  // Fungsi untuk mendapatkan teks status terakhir online
   const getLastSeenText = (lastSeen) => {
-    if (!lastSeen || lastSeen === null || lastSeen === undefined) {
-      console.log('lastSeen tidak valid untuk teks:', lastSeen);
-      return 'Tidak diketahui';
-    }
-    
+    if (!lastSeen) return 'Tidak diketahui';
     try {
-      return formatDistanceToNow(new Date(lastSeen), { 
-        addSuffix: true,
-        locale: id // Gunakan locale Indonesia
-      });
+      return formatDistanceToNow(new Date(lastSeen), { addSuffix: true, locale: id });
     } catch (error) {
       console.error('Error formatting lastSeen date:', error);
       return 'Tidak diketahui';
     }
   };
 
+  const handleShowGroupDetail = async () => {
+    if (!selectedGroup) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`http://localhost:5000/api/groups/${selectedGroup.id_group}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Log detail untuk debugging
+      console.log('Group detail data:', response.data);
+      console.log('Group members:', response.data.GroupMembers);
+      response.data.GroupMembers.forEach((member, idx) => {
+        console.log(`Member ${idx + 1}:`, {
+          name: member.User?.name || member.User?.username,
+          role: member.role,
+          isModerator: member.role?.toLowerCase() === 'moderator'
+        });
+      });
+      
+      setGroupDetailData(response.data);
+      setShowGroupDetailModal(true);
+    } catch (error) {
+      console.error('Error fetching group details:', error);
+    }
+  };
+
+  const handleKickMember = async (memberId) => {
+    if (!selectedGroup || !groupDetailData) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/groups/${selectedGroup.id_group}/members/${memberId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Refresh group data
+      const response = await axios.get(`http://localhost:5000/api/groups/${selectedGroup.id_group}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setGroupDetailData(response.data);
+      alert('Anggota berhasil dikeluarkan dari grup');
+    } catch (error) {
+      console.error('Error kicking member:', error);
+      alert('Gagal mengeluarkan anggota. Silakan coba lagi.');
+    }
+  };
+
+  const handlePromoteMember = async (memberId, currentRole) => {
+    if (!selectedGroup || !groupDetailData) return;
+    
+    const newRole = currentRole === 'member' ? 'moderator' : 'member';
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`http://localhost:5000/api/groups/${selectedGroup.id_group}/members/${memberId}/role`, {
+        role: newRole
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Refresh group data
+      const response = await axios.get(`http://localhost:5000/api/groups/${selectedGroup.id_group}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setGroupDetailData(response.data);
+      alert(`Anggota berhasil ${newRole === 'moderator' ? 'dipromosikan menjadi moderator' : 'diturunkan menjadi anggota biasa'}`);
+    } catch (error) {
+      console.error('Error updating member role:', error);
+      alert('Gagal mengubah role anggota. Silakan coba lagi.');
+    }
+  };
+
   useEffect(() => {
-    socket.current = io('http://localhost:5000'); // Sesuaikan dengan URL backend Anda
+    socket.current = io('http://localhost:5000');
 
     socket.current.on('receiveMessage', (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
+    });
+    
+    socket.current.on('receiveGroupMessage', (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+    
+    socket.current.on('connect_error', (error) => {
+      console.error('Koneksi socket error:', error);
+    });
+    
+    socket.current.on('error', (error) => {
+      console.error('Socket error:', error);
     });
 
     return () => {
@@ -78,63 +157,60 @@ const ChatPage = () => {
     };
   }, []);
   
-  // Interval untuk memperbarui status online/offline setiap 30 detik
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Memperbarui daftar pengguna untuk mendapatkan status terbaru
-      const fetchUsers = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const response = await axios.get('http://localhost:5000/api/users', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setUsers(response.data);
-        } catch (error) {
-          console.error('Error fetching users:', error);
-        }
-      };
-      
-      fetchUsers();
-    }, 30000); // 10 detik
-    
-    return () => clearInterval(interval);
+  const fetchGroups = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+      const response = await axios.get('http://localhost:5000/api/groups/my-groups', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setGroups(response.data);
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
+    }
   }, []);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchInitialData = async () => {
       try {
         const token = localStorage.getItem('token');
-        console.log('Mengambil token:', token);
-        const response = await axios.get('http://localhost:5000/api/users', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log('Respons pengguna:', response.data);
-        // Log last_seen untuk debugging
-        response.data.forEach(user => {
-          console.log(`User ${user.username} last_seen:`, user.last_seen);
-        });
-        setUsers(response.data);
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
+        const [usersResponse, groupsResponse] = await Promise.all([
+          axios.get('http://localhost:5000/api/users', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:5000/api/groups/my-groups', { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+        setUsers(usersResponse.data);
+        setGroups(groupsResponse.data);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching initial data:', error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          return;
+        }
         if (error.response) {
           console.error('Data error:', error.response.data);
-          console.error('Status error:', error.response.status);
-          console.error('Headers error:', error.response.headers);
-        } else if (error.request) {
-          console.error('Request error:', error.request);
         } else {
           console.error('Pesan error:', error.message);
         }
       }
     };
 
-    fetchUsers();
+    fetchInitialData();
     
-    // Close chat menu when clicking outside
     const handleClickOutside = (event) => {
       if (!event.target.closest('.chat-menu-container')) {
         setShowChatMenu(false);
@@ -143,30 +219,49 @@ const ChatPage = () => {
 
     document.addEventListener('click', handleClickOutside);
     
-    // Juga mengatur interval untuk memperbarui daftar pengguna setiap 30 detik
-    const interval = setInterval(fetchUsers, 30000);
+    const interval = setInterval(fetchInitialData, 30000); // Poll every 30 seconds
+    
     return () => {
       clearInterval(interval);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, []);
+  }, [fetchGroups]); // fetchGroups is stable due to useCallback
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   };
 
-  const fetchMessages = useCallback(async (recipientId) => {
+  const fetchMessages = useCallback(async (id, type) => {
+    if (!id) return;
+    
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/chats/${recipientId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+      
+      let response;
+      if (type === 'user') {
+        response = await axios.get(`http://localhost:5000/api/chats/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else if (type === 'group') {
+        response = await axios.get(`http://localhost:5000/api/groups/${id}/messages`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+      
       setMessages(response.data);
       scrollToBottom();
     } catch (error) {
       console.error('Error fetching messages:', error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return;
+      }
     }
   }, []);
 
@@ -175,99 +270,153 @@ const ChatPage = () => {
       const user = users.find(u => u.user_id === parseInt(initialRecipientId));
       if (user) {
         setSelectedUser(user);
-        fetchMessages(user.user_id);
+        setSelectedGroup(null);
+        setActiveTab('pesan');
+        fetchMessages(user.user_id, 'user');
+      } else {
+        const group = groups.find(g => g.id_grup === parseInt(initialRecipientId));
+        if (group) {
+          setSelectedGroup(group);
+          setSelectedUser(null);
+          setActiveTab('grup');
+          fetchMessages(group.id_grup, 'group');
+        }
       }
     }
-  }, [initialRecipientId, users, fetchMessages]);
+  }, [initialRecipientId, users, groups, fetchMessages]);
 
   useEffect(() => {
     if (selectedUser) {
-      // Update selectedUser when users list is updated
       const updatedUser = users.find(u => u.user_id === selectedUser.user_id);
-      if (updatedUser) {
-        setSelectedUser(updatedUser);
-      }
+      if (updatedUser) setSelectedUser(updatedUser);
     }
-  }, [users, selectedUser]);
+    if (selectedGroup) {
+      const updatedGroup = groups.find(g => g.id_grup === selectedGroup.id_grup);
+      if (updatedGroup) setSelectedGroup(updatedGroup);
+    }
+  }, [users, groups, selectedUser, selectedGroup]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
-    fetchMessages(user.user_id);
+    setSelectedGroup(null);
+    setActiveTab('pesan');
+    fetchMessages(user.user_id, 'user');
+  };
+  
+  const handleGroupSelect = (group) => {
+    if (!group || (!group.id_grup && !group.id_group)) {
+      console.error('Grup atau ID grup tidak valid:', group);
+      return;
+    }
+    
+    const normalizedGroup = {
+      ...group,
+      id_grup: group.id_grup || group.id_group,
+      ...(group.Group && {
+        nama_grup: group.nama_grup || group.Group.nama_group,
+        deskripsi: group.deskripsi || group.Group.deskripsi || '',
+        id_admin: group.id_admin || group.Group.id_admin,
+        foto_grup: group.foto_grup || group.Group.foto_grup
+      })
+    };
+    
+    setSelectedGroup(normalizedGroup);
+    setSelectedUser(null);
+    setActiveTab('grup');
+    fetchMessages(normalizedGroup.id_grup, 'group');
   };
 
   const handleDeleteChat = async () => {
     if (!selectedUser) return;
-    
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`http://localhost:5000/api/chats/delete-chat/${selectedUser.user_id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
-      // Update UI dengan mengosongkan pesan
       setMessages([]);
       setShowChatMenu(false);
       setShowConfirmModal(false);
-      
-      // Tampilkan notifikasi sukses
       alert('Percakapan berhasil dihapus');
     } catch (error) {
       console.error('Gagal menghapus chat:', error);
-      let errorMessage = 'Gagal menghapus percakapan. Silakan coba lagi.';
-      if (error.response) {
-        // Server merespons dengan status error
-        errorMessage = error.response.data.message || errorMessage;
-      } else if (error.request) {
-        // Permintaan dikirim tapi tidak ada respons
-        errorMessage = 'Tidak ada respons dari server. Periksa koneksi internet Anda.';
-      }
+      const errorMessage = error.response?.data?.message || 'Gagal menghapus percakapan. Silakan coba lagi.';
+      alert(errorMessage);
+    }
+  };
+  
+  const handleDeleteGroupChat = async () => {
+    if (!selectedGroup) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/groups/${selectedGroup.id_grup}/delete-messages`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMessages([]);
+      setShowChatMenu(false);
+      setShowConfirmModal(false);
+      alert('Percakapan grup berhasil dihapus');
+    } catch (error) {
+      console.error('Gagal menghapus chat grup:', error);
+      const errorMessage = error.response?.data?.message || 'Gagal menghapus percakapan grup. Silakan coba lagi.';
       alert(errorMessage);
     }
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if ((!newMessage.trim() && !selectedFile) || !selectedUser) return;
+    if ((!newMessage.trim() && !selectedFile) || (!selectedUser && !selectedGroup)) return;
 
     try {
       const token = localStorage.getItem('token');
+      const formData = new FormData();
       let response;
-
+      let endpoint = '';
+      let payload = {};
+      
       if (selectedFile) {
-        const formData = new FormData();
-        formData.append('id_penerima', selectedUser.user_id);
         formData.append('pesan', newMessage);
         formData.append('file', selectedFile);
-
-        response = await axios.post(
-          'http://localhost:5000/api/chats/send-file',
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        );
+        if (activeTab === 'pesan') {
+          formData.append('id_penerima', selectedUser.user_id);
+          endpoint = 'http://localhost:5000/api/chats/send-file';
+        } else {
+          formData.append('id_grup', selectedGroup.id_grup);
+          endpoint = `http://localhost:5000/api/groups/${selectedGroup.id_grup}/messages/file`;
+        }
+        payload = formData;
       } else {
-        response = await axios.post(
-          'http://localhost:5000/api/chats/send',
-          {
-            id_penerima: selectedUser.user_id,
-            pesan: newMessage,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        if (activeTab === 'pesan') {
+          endpoint = 'http://localhost:5000/api/chats/send';
+          payload = { id_penerima: selectedUser.user_id, pesan: newMessage };
+        } else {
+          endpoint = `http://localhost:5000/api/groups/${selectedGroup.id_grup}/messages`;
+          payload = { pesan: newMessage };
+        }
+      }
+
+      response = await axios.post(endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(selectedFile && { 'Content-Type': 'multipart/form-data' })
+        }
+      });
+      
+      if (response.data.chat) {
+        socket.current.emit('sendMessage', response.data.chat);
+      } else if (response.data.groupChat) {
+        socket.current.emit('sendGroupMessage', response.data.groupChat);
       }
 
       setNewMessage('');
@@ -277,9 +426,6 @@ const ChatPage = () => {
         setSelectedFile(null);
       }
       scrollToBottom();
-      if (response.data.chat) {
-        socket.current.emit('sendMessage', response.data.chat);
-      }
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -290,48 +436,20 @@ const ChatPage = () => {
   };
 
   const handleFileUpload = (type) => {
-    if (type === 'image') {
-      setSelectedFileType('media');
-      setShowFilePopup(true);
-      setShowAttachmentMenu(false);
-    } else if (type === 'document') {
-      setSelectedFileType('document');
-      setShowFilePopup(true);
-      setShowAttachmentMenu(false);
-    }
+    setSelectedFileType(type === 'image' ? 'media' : 'document');
+    setShowFilePopup(true);
+    setShowAttachmentMenu(false);
   };
 
   const handleFileSelect = (fileType) => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    
-    switch(fileType) {
-      case 'media':
-        fileInput.accept = 'image/*,video/*,.mkv';
-        break;
-      case 'document':
-        fileInput.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt';
-        break;
-      case 'image':
-        fileInput.accept = 'image/*';
-        break;
-      case 'video':
-        fileInput.accept = 'video/*,.mkv';
-        break;
-      case 'audio':
-        fileInput.accept = 'audio/*';
-        break;
-      default:
-        fileInput.accept = '*/*';
-    }
-    
+    fileInput.accept = fileType === 'media' ? 'image/*,video/*,.mkv' : '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt';
     fileInput.click();
     fileInput.onchange = (e) => {
       const file = e.target.files[0];
       if (file) {
-        console.log(`File dipilih: ${file.name}, tipe: ${fileType}`);
         setSelectedFile(file);
-        // Buat URL untuk preview hanya untuk gambar
         if (file.type.startsWith('image/')) {
           const fileUrl = URL.createObjectURL(file);
           setPreviewUrl(fileUrl);
@@ -341,357 +459,348 @@ const ChatPage = () => {
       }
     };
   };
-  
-  // Cleanup object URLs on unmount
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
    
   return (
     <div className="chat-container">
       <div className="sidebar-chat">
         <div className="chat-tabs">
-          <div className="tab-item">permintaan</div>
-          <div className="tab-item active">pesan</div>
-          <div className="tab-item">grup</div>
+          <div 
+            className={`tab-item ${activeTab === 'permintaan' ? 'active' : ''}`}
+            onClick={() => setActiveTab('permintaan')}
+          >
+            Permintaan
+          </div>
+          <div 
+            className={`tab-item ${activeTab === 'pesan' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('pesan');
+              setSelectedGroup(null);
+              setMessages([]);
+            }}
+          >
+            Pesan
+          </div>
+          <div 
+            className={`tab-item ${activeTab === 'grup' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('grup');
+              setSelectedUser(null);
+              setMessages([]);
+            }}
+          >
+            Grup
+          </div>
         </div>
-        <h2>Pengguna</h2>
-        <ul>
-          {console.log('Users state:', users)}
-          {users.length > 0 ? (
-            users.map((user) => (
-              <li
-                key={user.user_id}
-                onClick={() => handleUserSelect(user)}
-                className={selectedUser && selectedUser.user_id === user.user_id ? 'active' : ''}
+        {activeTab === 'pesan' && (
+          <>
+            <h2>Pengguna</h2>
+            <ul>
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <li
+                    key={user.user_id}
+                    onClick={() => handleUserSelect(user)}
+                    className={selectedUser?.user_id === user.user_id ? 'active' : ''}
+                  >
+                    <img 
+                      src={user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg'} 
+                      alt={user.username} 
+                      className="profile-pic"
+                      onError={(e) => { e.target.src = '/default-avatar.svg'; }}
+                    />
+                    <div className="user-status-container">
+                      <span>{user.username}</span>
+                      <div className="user-status">
+                        <span className="status-text">
+                          {isUserOnline(user.last_seen) ? <span style={{ color: 'green' }}>sedang aktif</span> : `aktif ${getLastSeenText(user.last_seen)}`}
+                        </span>
+                      </div>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <li>Tidak ada pengguna lain.</li>
+              )}
+            </ul>
+          </>
+        )}
+        {activeTab === 'grup' && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: '10px' }}>
+              <h2>Grup</h2>
+              <button 
+                onClick={() => setShowCreateGroupModal(true)}
+                className="create-group-btn"
+                title="Buat Grup Baru"
               >
-                <img 
-                  src={user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg'} 
-                  alt={user.username} 
-                  className="profile-pic"
-                  onError={(e) => {
-                    e.target.src = '/default-avatar.svg';
-                  }}
-                />
-                <div className="user-status-container">
-                  <span>{user.username}</span>
-                  <div className="user-status">
-                    <span className="status-text">
-                      {isUserOnline(user.last_seen) ? <span style={{ color: 'green' }}>sedang aktif</span> : `aktif ${getLastSeenText(user.last_seen)}`}
-                    </span>
-                  </div>
-                </div>
-              </li>
-            ))
-          ) : (
-            <li>Tidak ada pengguna lain.</li>
-          )}
-        </ul>
+                <FaPlus />
+              </button>
+            </div>
+            <ul>
+              {groups.length > 0 ? (
+                groups.map((group) => (
+                  <li
+                    key={group.id_grup}
+                    onClick={() => handleGroupSelect(group)}
+                    className={selectedGroup?.id_grup === group.id_grup ? 'active' : ''}
+                  >
+                    <img 
+                      src={group.foto_grup ? `http://localhost:5000${group.foto_grup}` : '/default-avatar.svg'} 
+                      alt={group.nama_grup} 
+                      className="profile-pic"
+                      onError={(e) => { e.target.src = '/default-avatar.svg'; }}
+                    />
+                    <div className="user-status-container">
+                      <span style={{fontWeight: 'bold'}}>
+                        {group.nama_grup || group.Group?.nama_group || 'Grup Tanpa Nama'}
+                      </span>
+                      <div className="user-status">
+                        <span className="status-text">
+                          {group.Group?.GroupMembers?.length || group.GroupMembers?.length || group.jumlah_anggota || 0} anggota
+                        </span>
+                      </div>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <li>Tidak ada grup.</li>
+              )}
+            </ul>
+          </>
+        )}
       </div>
       <div className="chat-area">
-        {selectedUser ? (
+        {(selectedUser || selectedGroup) ? (
           <>
             <div className="chat-header">
               <img 
-                  src={selectedUser.foto_profil ? `http://localhost:5000${selectedUser.foto_profil}` : '/default-avatar.svg'} 
-                  alt={selectedUser.username} 
+                  src={selectedUser ? (selectedUser.foto_profil ? `http://localhost:5000${selectedUser.foto_profil}` : '/default-avatar.svg') : (selectedGroup.foto_grup ? `http://localhost:5000${selectedGroup.foto_grup}` : '/default-avatar.svg')} 
+                  alt={selectedUser ? selectedUser.username : selectedGroup.nama_grup} 
                   className="profile-pic"
-                  onError={(e) => {
-                    e.target.src = '/default-avatar.svg';
-                  }}
+                  onError={(e) => { e.target.src = '/default-avatar.svg'; }}
                 />
               <div className="user-status-container">
-                <h3>{selectedUser.username}</h3>
+                <h3>{selectedUser ? selectedUser.username : selectedGroup.nama_grup}</h3>
                 <div className="user-status">
                   <span className="status-text">
-                    {isUserOnline(selectedUser.last_seen) ? <span style={{ color: 'green' }}>sedang aktif</span> : `aktif ${getLastSeenText(selectedUser.last_seen)}`}
+                    {selectedUser ? (isUserOnline(selectedUser.last_seen) ? <span style={{ color: 'green' }}>sedang aktif</span> : `aktif ${getLastSeenText(selectedUser.last_seen)}`) : `${selectedGroup.Group?.GroupMembers?.length || selectedGroup.GroupMembers?.length || selectedGroup.jumlah_anggota || 0} anggota`}
                   </span>
                 </div>
               </div>
               <div className="chat-menu-container">
-                <button 
-                  className="chat-menu-button"
-                  onClick={() => setShowChatMenu(!showChatMenu)}
-                >
+                <button className="chat-menu-button" onClick={() => setShowChatMenu(!showChatMenu)}>
                   <FaEllipsisV />
                 </button>
                 {showChatMenu && (
                    <div className="chat-dropdown-menu">
-                     <button 
-                       className="menu-item delete-chat"
-                       onClick={() => {
-                         setConfirmModalMessage('Apakah Anda yakin ingin menghapus semua pesan dalam chat ini?');
-                         setConfirmModalAction(() => () => {
-                           handleDeleteChat();
-                         });
-                         setShowConfirmModal(true);
-                         setShowChatMenu(false);
-                       }}
-                     >
-                       <FaTrash /> Hapus Chat
-                     </button>
-                     <button
-                       className="menu-item block-user"
-                       onClick={() => {
-                         setConfirmModalMessage(`Apakah Anda yakin ingin memblokir ${selectedUser.username}?`);
-                         setConfirmModalAction(() => () => {
-                           // TODO: Implement block user functionality
-                           console.log('Block user:', selectedUser.username);
+                     {activeTab === 'grup' && selectedGroup && (
+                       <button 
+                         className="menu-item view-group-detail"
+                         onClick={() => {
+                           handleShowGroupDetail();
                            setShowChatMenu(false);
-                           setShowConfirmModal(false);
-                         });
-                         setShowConfirmModal(true);
-                         setShowChatMenu(false);
-                       }}
-                     >
-                       <FaBan /> Blokir Pengguna
-                     </button>
+                         }}
+                       >
+                         <FaInfoCircle /> Lihat Detail Grup
+                       </button>
+                     )}
+                     {activeTab === 'pesan' && (
+                       <button 
+                         className="menu-item delete-chat"
+                         onClick={() => {
+                           setConfirmModalMessage('Apakah Anda yakin ingin menghapus semua pesan dalam chat ini?');
+                           setConfirmModalAction(() => handleDeleteChat); // FIX: Corrected function reference
+                           setShowConfirmModal(true);
+                           setShowChatMenu(false);
+                         }}
+                       >
+                         <FaTrash /> Hapus Chat
+                       </button>
+                     )}
+                     {activeTab === 'grup' && (
+                       <button 
+                         className="menu-item delete-chat"
+                         onClick={() => {
+                           setConfirmModalMessage('Apakah Anda yakin ingin menghapus semua pesan dalam grup ini?');
+                           setConfirmModalAction(() => handleDeleteGroupChat); // FIX: Corrected function reference
+                           setShowConfirmModal(true);
+                           setShowChatMenu(false);
+                         }}
+                       >
+                         <FaTrash /> Hapus Chat Grup
+                       </button>
+                     )}
+                     {activeTab === 'pesan' && (
+                       <button
+                         className="menu-item block-user"
+                         onClick={() => {
+                           setConfirmModalMessage(`Apakah Anda yakin ingin memblokir ${selectedUser.username}?`);
+                           // FIX: Corrected function definition
+                           setConfirmModalAction(() => () => {
+                             console.log('Block user:', selectedUser.username);
+                             // TODO: Implement block user functionality
+                             setShowConfirmModal(false);
+                           });
+                           setShowConfirmModal(true);
+                           setShowChatMenu(false);
+                         }}
+                       >
+                         <FaBan /> Blokir Pengguna
+                       </button>
+                     )}
                    </div>
                  )}
               </div>
             </div>
             <div className="messages">
-              {messages.map((msg) => (
+              {messages.map((msg) => {
+                const userId = JSON.parse(localStorage.getItem('user'))?.id;
+                const isCurrentUser = msg.id_pengirim === userId;
+                
+                return (
                 <div
-                  key={msg.id_chat}
-                  className={`message ${msg.id_pengirim === selectedUser.user_id ? 'received' : 'sent'}`}
+                  key={msg.id_chat || msg.id_group_chat}
+                  className={`message ${isCurrentUser ? 'sent' : 'received'}`}
                 >
                   {msg.media_url ? (
                     <div className="message-media">
-                      {(() => {
-                        const fileName = msg.media_url.split('/').pop();
-                        const fileExt = fileName.split('.').pop().toLowerCase();
-                        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExt);
-                        const isVideo = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(fileExt);
+                      <>
+                        {(() => {
+                          const fileName = msg.media_url.split('/').pop();
+                          const fileExt = fileName.split('.').pop().toLowerCase();
+                          const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExt);
+                          const isVideo = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(fileExt);
 
-                        if (isImage) {
+                          if (isImage) {
+                            return (
+                              <>
+                                <img
+                                  src={`http://localhost:5000${msg.media_url}`}
+                                  alt="Media terkirim"
+                                  className="message-image"
+                                  onClick={() => {
+                                    setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
+                                    setPreviewMediaType('image');
+                                    setShowMediaPreview(true);
+                                  }}
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'block';
+                                  }}
+                                />
+                                <div className="media-error">❌ Gagal memuat gambar</div>
+                              </>
+                            );
+                          } else if (isVideo) {
                           return (
-                            <img
-                              src={`http://localhost:5000${msg.media_url}`}
-                              alt="Sent media"
-                              className="message-image"
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => {
-                                setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
-                                setPreviewMediaType('image');
-                                setShowMediaPreview(true);
-                              }}
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                const errorDiv = document.createElement('div');
-                                errorDiv.innerHTML = `<div style="padding: 10px; background: #f0f0f0; border-radius: 4px; color: #666;">❌ Gambar tidak dapat dimuat<br><small>${fileName}</small></div>`;
-                                e.target.parentNode.appendChild(errorDiv);
-                              }}
-                            />
-                          );
-                        } else if (isVideo) {
-                          return (
-                            <div style={{ position: 'relative', cursor: 'pointer' }}
-                              onClick={() => {
-                                setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
-                                setPreviewMediaType('video');
-                                setShowMediaPreview(true);
-                              }}
-                            >
-                              <video
-                                src={`http://localhost:5000${msg.media_url}`}
-                                className="message-video"
-                                style={{ borderRadius: '8px', objectFit: 'cover', pointerEvents: 'none' }}
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  const errorDiv = document.createElement('div');
-                                  errorDiv.innerHTML = `<div style="padding: 10px; background: #f0f0f0; border-radius: 4px; color: #666;">❌ Video tidak dapat dimuat<br><small>${fileName}</small></div>`;
-                                  e.target.parentNode.appendChild(errorDiv);
+                            <>
+                              <div className="video-container"
+                                onClick={() => {
+                                  setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
+                                  setPreviewMediaType('video');
+                                  setShowMediaPreview(true);
                                 }}
-                              />
-                              <div style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                backgroundColor: 'rgba(0,0,0,0.6)',
-                                borderRadius: '50%',
-                                width: '40px',
-                                height: '40px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontSize: '16px'
-                              }}>
-                                ▶
+                              >
+                                <video
+                                  src={`http://localhost:5000${msg.media_url}`}
+                                  className="message-video"
+                                  onError={(e) => {
+                                    e.target.parentElement.querySelector('.video-play-button').style.display = 'none';
+                                    e.target.parentElement.querySelector('.media-error').style.display = 'block';
+                                  }}
+                                />
+                                <div className="video-play-button">▶</div>
+                                <div className="media-error">❌ Gagal memuat video</div>
                               </div>
-                            </div>
+                            </>
                           );
-                        } else {
-                          return (
-                            <div className="document-file" style={{
-                              padding: '10px',
-                              border: '1px solid #ddd',
-                              borderRadius: '8px',
-                              backgroundColor: '#f9f9f9',
-                              cursor: 'pointer'
-                            }} onClick={() => window.open(`http://localhost:5000${msg.media_url}`, '_blank')}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '20px' }}>📄</span>
-                                <div>
-                                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#333' }}>{fileName}</div>
-                                  <div style={{ fontSize: '12px', color: '#666' }}>Klik untuk membuka</div>
+                          } else {
+                            return (
+                              <a href={`http://localhost:5000${msg.media_url}`} target="_blank" rel="noopener noreferrer" className="document-file">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ fontSize: '20px' }}>📄</span>
+                                  <div>
+                                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#333' }}>{fileName}</div>
+                                    <div style={{ fontSize: '12px', color: '#666' }}>Klik untuk membuka</div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                          );
-                        }
-                      })()}
-                      {msg.pesan && <p className="message-caption">{msg.pesan}</p>}
+                              </a>
+                            );
+                          }
+                        })()}
+                        {msg.pesan && <p className="message-caption">{msg.pesan}</p>}
+                      </>
                     </div>
                   ) : (
                     <p>{msg.pesan}</p>
                   )}
                 </div>
-              ))}
+              )})}
               <div ref={messagesEndRef} />
             </div>
             {showFilePopup && (
               <div className="attachment-popup-overlay" onClick={() => setShowFilePopup(false)}>
                 <div className="attachment-popup-content" onClick={(e) => e.stopPropagation()}>
                   <div className="attachment-popup-header">
-                    <h3>{selectedFileType === 'media' ? 'Masukan Foto/Video' : 'Masukan Dokumen'}</h3>
-                    <button 
-                      className="attachment-popup-close"
-                      onClick={() => setShowFilePopup(false)}
-                    >
-                      ×
-                    </button>
+                    <h3>{selectedFileType === 'media' ? 'Masukkan Foto/Video' : 'Masukkan Dokumen'}</h3>
+                    <button className="attachment-popup-close" onClick={() => setShowFilePopup(false)}>×</button>
                   </div>
                   <div className="attachment-popup-options">
-                    {selectedFileType === 'document' && (
-                      <div 
-                        className="attachment-popup-option"
-                        onClick={() => handleFileSelect('document')}
-                      >
-                        <div className="attachment-popup-icon document">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <polyline points="14,2 14,8 20,8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <polyline points="10,9 9,9 8,9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                        <div className="attachment-popup-text">
-                          <h4>Masukan Dokumen</h4>
-                          <p>PDF, DOC, TXT</p>
-                        </div>
+                    <div className="attachment-popup-option" onClick={() => handleFileSelect(selectedFileType)}>
+                      <div className={`attachment-popup-icon ${selectedFileType}`}>
+                        {/* SVG icons can be placed here */}
                       </div>
-                    )}
-                    {selectedFileType === 'media' && (
-                      <div 
-                        className="attachment-popup-option"
-                        onClick={() => handleFileSelect('media')}
-                      >
-                        <div className="attachment-popup-icon media">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
-                            <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="2"/>
-                            <polyline points="21,15 16,10 5,21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                        <div className="attachment-popup-text">
-                          <h4>Masukan Foto/Video</h4>
-                          <p>JPG, PNG, MP4, AVI</p>
-                        </div>
+                      <div className="attachment-popup-text">
+                        <h4>Pilih dari Perangkat</h4>
+                        <p>{selectedFileType === 'media' ? 'JPG, PNG, MP4...' : 'PDF, DOC, TXT...'}</p>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
-            {/* Attachment dan preview file dalam satu baris */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 12 }}>
-              {/* Attachment button dan menu dihapus sesuai permintaan */}
-              <div style={{ width: 0, height: 0 }}></div>
-              {(previewUrl || selectedFile) && (
-  <div className="file-preview" style={{ marginLeft: 64, position: 'relative', display: 'inline-block', maxWidth: 180 }}>
-    {/* Tombol X di luar gambar/file */}
-    <button
-      type="button"
-      onClick={() => {
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
-          setPreviewUrl('');
-        }
-        setSelectedFile(null);
-      }}
-      style={{
-        position: 'absolute',
-        top: -18,
-        right: -18,
-        background: 'transparent',
-        color: '#e53935',
-        border: 'none',
-        borderRadius: 0,
-        width: 24,
-        height: 24,
-        fontSize: 22,
-        fontWeight: 'bold',
-        lineHeight: 1,
-        cursor: 'pointer',
-        zIndex: 3,
-        padding: 0,
-        boxShadow: 'none',
-      }}
-      aria-label="Hapus preview"
-      title="Hapus preview"
-    >
-      ×
-    </button>
-    {previewUrl ? (
-      <img src={previewUrl} alt="Preview" style={{ maxWidth: '160px', maxHeight: '160px', borderRadius: 8 }} />
-    ) : selectedFile ? (
-      <div style={{ 
-        padding: '14px', 
-        border: '1px solid #ccc', 
-        borderRadius: '8px', 
-        backgroundColor: '#f5f5f5',
-        maxWidth: '240px',
-        minWidth: '140px',
-        minHeight: '90px',
-        position: 'relative'
-      }}>
-        <div style={{ fontSize: '12px', color: '#666', wordBreak: 'break-all' }}>📄 {selectedFile.name}</div>
-        <div style={{ fontSize: '10px', color: '#999' }}>{(selectedFile.size / 1024).toFixed(1)} KB</div>
-      </div>
-    ) : null}
-  </div>
-)}
-            </div>
+            
+            {(previewUrl || selectedFile) && (
+              <div className="file-preview-container">
+                <div className="file-preview">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (previewUrl) URL.revokeObjectURL(previewUrl);
+                      setPreviewUrl('');
+                      setSelectedFile(null);
+                    }}
+                    className="file-preview-remove-btn"
+                    aria-label="Hapus preview"
+                  >
+                    ×
+                  </button>
+                  {previewUrl ? (
+                    <img src={previewUrl} alt="Preview" className="file-preview-image" />
+                  ) : (
+                    <div className="file-preview-info">
+                      <span>📄 {selectedFile.name}</span>
+                      <small>{(selectedFile.size / 1024).toFixed(1)} KB</small>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSendMessage} className="message-input">
               <div className="attachment-container">
-                <button 
-                  type="button" 
-                  className="attachment-button"
-                  onClick={handleAttachmentClick}
-                >
+                <button type="button" className="attachment-button" onClick={handleAttachmentClick}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 4V20M4 12H20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
                 {showAttachmentMenu && (
                   <div className="attachment-menu">
-                    <div className="attachment-item" onClick={() => handleFileUpload('image')}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM13.96 12.29L11.21 15.83L9.25 13.47L6.5 17H17.5L13.96 12.29Z" fill="white"/>
-                      </svg>
+                    <div className="attachment-item" onClick={() => handleFileUpload('image')} title="Gambar/Video">
+                      <svg width="16" height="16" viewBox="0 0 24 24"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM13.96 12.29L11.21 15.83L9.25 13.47L6.5 17H17.5L13.96 12.29Z" fill="white"/></svg>
                     </div>
-                    <div className="attachment-item" onClick={() => handleFileUpload('document')}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M14 2H6C4.9 2 4.01 2.9 4.01 4L4 20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20Z" fill="white"/>
-                      </svg>
+                    <div className="attachment-item" onClick={() => handleFileUpload('document')} title="Dokumen">
+                      <svg width="16" height="16" viewBox="0 0 24 24"><path d="M14 2H6C4.9 2 4.01 2.9 4.01 4L4 20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20Z" fill="white"/></svg>
                     </div>
                   </div>
                 )}
@@ -702,62 +811,24 @@ const ChatPage = () => {
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Ketik pesan di sini..."
               />
-              <button 
-                type="submit" 
-                style={{
-                  background: '#2A8BF2',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  padding: 0,
-                  marginLeft: '8px'
-                }}
-              >
-                <svg 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path 
-                    d="M22 2L11 13" 
-                    stroke="white" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  />
-                  <path 
-                    d="M22 2L15 22L11 13L2 9L22 2Z" 
-                    fill="white"
-                    stroke="white" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  />
+              <button type="submit" className="send-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22 2L15 22L11 13L2 9L22 2Z" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
             </form>
-
           </>
         ) : (
-          <div className="no-chat-selected">Pilih pengguna untuk memulai chat</div>
+          <div className="no-chat-selected">Pilih {activeTab === 'pesan' ? 'pengguna' : 'grup'} untuk memulai percakapan</div>
         )}
-        {/* Custom Confirmation Modal */}
+        
         {showConfirmModal && (
           <div className="custom-confirm-modal-overlay">
             <div className="custom-confirm-modal-content">
               <p>{confirmModalMessage}</p>
               <div className="custom-confirm-modal-buttons">
                 <button onClick={() => {
-                  if (confirmModalAction) {
-                    confirmModalAction();
-                  }
+                  if (confirmModalAction) confirmModalAction()();
                   setShowConfirmModal(false);
                 }}>Ya</button>
                 <button onClick={() => setShowConfirmModal(false)}>Tidak</button>
@@ -767,144 +838,453 @@ const ChatPage = () => {
         )}
       </div>
       
-      {/* Media Preview Modal */}
+      {showCreateGroupModal && (
+        <CreateGroup 
+          onClose={() => setShowCreateGroupModal(false)} 
+          onGroupCreated={fetchGroups}
+        />
+      )}
+
       {showMediaPreview && (
-        <div
-          className="media-preview-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            cursor: 'pointer'
-          }}
-          onClick={() => setShowMediaPreview(false)}
-        >
-          <div
-             style={{
-               position: 'relative',
-               maxWidth: '95vw',
-               maxHeight: '95vh',
-               minWidth: '300px',
-               minHeight: '300px',
-               display: 'flex',
-               alignItems: 'center',
-               justifyContent: 'center'
-             }}
-             onClick={(e) => e.stopPropagation()}
-           >
-            {/* Close Button */}
-            <button
-              style={{
-                position: 'absolute',
-                top: '-40px',
-                right: '0',
-                background: 'none',
-                border: 'none',
-                color: 'white',
-                fontSize: '30px',
-                cursor: 'pointer',
-                zIndex: 1001,
-                padding: '5px 10px'
-              }}
-              onClick={() => setShowMediaPreview(false)}
-            >
-              ×
-            </button>
-            
-            {/* Media Content */}
+        <div className="media-preview-overlay" onClick={() => setShowMediaPreview(false)}>
+          <div className="media-preview-content" onClick={(e) => e.stopPropagation()}>
+            <button className="media-preview-close" onClick={() => setShowMediaPreview(false)}>×</button>
             {previewMediaType === 'image' ? (
               <img
                 src={previewMediaUrl}
                 alt="Preview"
-                style={{
-                  width: 'auto',
-                  height: 'auto',
-                  maxWidth: '95vw',
-                  maxHeight: '95vh',
-                  minWidth: '400px',
-                  minHeight: '300px',
-                  objectFit: 'contain',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
-                }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  const errorDiv = document.createElement('div');
-                  errorDiv.innerHTML = '<div style="color: white; text-align: center; padding: 20px;">❌ Gambar tidak dapat dimuat</div>';
-                  e.target.parentNode.appendChild(errorDiv);
-                }}
+                className="media-preview-item"
               />
             ) : previewMediaType === 'video' ? (
               <video
                 src={previewMediaUrl}
                 controls
                 autoPlay
-                style={{
-                  width: 'auto',
-                  height: 'auto',
-                  maxWidth: '95vw',
-                  maxHeight: '95vh',
-                  minWidth: '400px',
-                  minHeight: '300px',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
-                }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  const errorDiv = document.createElement('div');
-                  errorDiv.innerHTML = '<div style="color: white; text-align: center; padding: 20px;">❌ Video tidak dapat dimuat</div>';
-                  e.target.parentNode.appendChild(errorDiv);
-                }}
+                className="media-preview-item"
               />
             ) : null}
           </div>
         </div>
       )}
+
+      {showGroupDetailModal && groupDetailData && (
+        <GroupDetailModal>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>Detail Grup</ModalTitle>
+              <CloseButton onClick={() => setShowGroupDetailModal(false)}>×</CloseButton>
+            </ModalHeader>
+            
+            <ModalBody>
+              <GroupModalIcon>
+                <FaUsers />
+              </GroupModalIcon>
+              
+              <GroupModalName>{groupDetailData.nama_group}</GroupModalName>
+              
+              {groupDetailData.deskripsi && (
+                <GroupModalDescription>
+                  {groupDetailData.deskripsi}
+                </GroupModalDescription>
+              )}
+              
+              <GroupModalStats>
+                <StatItem>
+                  <StatNumber>{groupDetailData.GroupMembers?.length || 0}</StatNumber>
+                  <StatLabel>Anggota</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatNumber>Publik</StatNumber>
+                  <StatLabel>Tipe Grup</StatLabel>
+                </StatItem>
+              </GroupModalStats>
+              
+              <AdminInfo>
+                <AdminAvatar>
+                  {(groupDetailData.Admin?.name || groupDetailData.Admin?.username || 'A').charAt(0).toUpperCase()}
+                </AdminAvatar>
+                <AdminDetails>
+                  <AdminName>{groupDetailData.Admin?.name || groupDetailData.Admin?.username || 'Unknown'}</AdminName>
+                  <AdminRole>Administrator Grup</AdminRole>
+                </AdminDetails>
+              </AdminInfo>
+              
+              {groupDetailData.GroupMembers && groupDetailData.GroupMembers.length > 0 && (
+                <MembersList>
+                  <MembersTitle>Anggota Grup</MembersTitle>
+                  {groupDetailData.GroupMembers.map((member, index) => {
+                    const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+                    const currentUserId = currentUser?.user_id;
+                    
+                    // Cari data member untuk user yang sedang login
+                    const currentUserMemberData = groupDetailData.GroupMembers.find(m => m.id_user === currentUserId);
+                    const currentUserRole = currentUserMemberData?.role?.toLowerCase();
+                    
+                    const isCurrentUserAdmin = groupDetailData.id_admin === currentUserId;
+                    const isCurrentUserModerator = currentUserRole === 'moderator';
+                    
+                    // Debug log
+                    console.log('Current user ID:', currentUserId);
+                    console.log('Current user role:', currentUserRole);
+                    console.log('Member data:', member);
+                    
+                    // Admin bisa mengelola moderator dan member
+                    // Moderator hanya bisa mengelola member biasa
+                    const canManageMember = (
+                      (isCurrentUserAdmin || 
+                       (isCurrentUserModerator && member.role?.toLowerCase() === 'member')
+                      ) && 
+                      member.id_user !== currentUserId
+                    );
+                    
+                    console.log('Can manage member:', canManageMember, {
+                      isCurrentUserAdmin, 
+                      isCurrentUserModerator, 
+                      memberRole: member.role, 
+                      isNotSelf: member.id_user !== currentUserId
+                    });
+                    
+                    return (
+                      <MemberItem key={index}>
+                        <MemberAvatar>
+                          {(member.User?.name || member.User?.username || 'U').charAt(0).toUpperCase()}
+                        </MemberAvatar>
+                        <MemberInfo>
+                          <MemberName>{member.User?.name || member.User?.username || 'Unknown'}</MemberName>
+                          <MemberRoleContainer>
+                            <MemberRole>
+                              {(() => {
+                                const role = member.role?.toLowerCase();
+                                console.log(`Rendering member ${member.User?.name || member.User?.username} with role:`, role);
+                                
+                                if (role === 'admin') {
+                                  return (
+                                    <>
+                                      <FaCrown style={{ 
+                                        color: '#ffd700', 
+                                        fontSize: '14px',
+                                        display: 'inline-block',
+                                        marginRight: '4px'
+                                      }} />
+                                      <span>Administrator</span>
+                                    </>
+                                  );
+                                } else if (role === 'moderator') {
+                                  return (
+                                    <>
+                                      <FaUserShield style={{ 
+                                        color: '#4a6cf7', 
+                                        fontSize: '14px',
+                                        display: 'inline-block',
+                                        marginRight: '4px'
+                                      }} />
+                                      <span>Moderator</span>
+                                    </>
+                                  );
+                                } else {
+                                  return <span>Anggota</span>;
+                                }
+                              })()}
+                            </MemberRole>
+                          </MemberRoleContainer>
+                        </MemberInfo>
+                        {canManageMember && (
+                          <MemberActions>
+                            {isCurrentUserAdmin && (
+                              <ActionButton 
+                                onClick={() => handlePromoteMember(member.id_user, member.role)}
+                                title={member.role === 'moderator' ? 'Turunkan ke Anggota' : 'Promosikan ke Moderator'}
+                                $promote
+                              >
+                                <FaUserShield />
+                              </ActionButton>
+                            )}
+                            <ActionButton 
+                              onClick={() => {
+                                if (window.confirm(`Apakah Anda yakin ingin mengeluarkan ${member.User?.name || member.User?.username} dari grup?`)) {
+                                  handleKickMember(member.id_user);
+                                }
+                              }}
+                              title="Keluarkan dari Grup"
+                              $kick
+                            >
+                              <FaUserTimes />
+                            </ActionButton>
+                          </MemberActions>
+                        )}
+                      </MemberItem>
+                    );
+                  })}
+                </MembersList>
+              )}
+            </ModalBody>
+          </ModalContent>
+        </GroupDetailModal>
+      )}
     </div>
    );
 };
 
-// CSS untuk styling gambar di pesan
-<style>
-{`
-.message-media {
+// Styled Components untuk Modal Detail Grup
+const GroupDetailModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+`;
+
+const ModalTitle = styled.h2`
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #f0f0f0;
+    color: #333;
+  }
+`;
+
+const ModalBody = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 20px;
+`;
+
+const GroupModalIcon = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #4a6cf7, #667eea);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 32px;
+  margin: 0 auto 20px;
+`;
+
+const GroupModalName = styled.h3`
+  text-align: center;
+  margin: 0 0 10px 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+`;
+
+const GroupModalDescription = styled.p`
+  text-align: center;
+  margin: 0 0 20px 0;
+  color: #666;
+  font-size: 16px;
+  line-height: 1.5;
+`;
+
+const GroupModalStats = styled.div`
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+`;
+
+const StatItem = styled.div`
+  text-align: center;
+`;
+
+const StatNumber = styled.div`
+  font-size: 20px;
+  font-weight: 700;
+  color: #4a6cf7;
+  margin-bottom: 5px;
+`;
+
+const StatLabel = styled.div`
+  font-size: 14px;
+  color: #666;
+`;
+
+const AdminInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+`;
+
+const AdminAvatar = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #4a6cf7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+`;
+
+const AdminDetails = styled.div`
+  flex: 1;
+`;
+
+const AdminName = styled.div`
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+`;
+
+const AdminRole = styled.div`
+  font-size: 12px;
+  color: #666;
+`;
+
+const MembersList = styled.div`
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+`;
+
+const MembersTitle = styled.h4`
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+`;
+
+const MemberItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const MemberAvatar = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #667eea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+`;
+
+const MemberInfo = styled.div`
+  flex: 1;
+`;
+
+const MemberName = styled.div`
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+`;
+
+const MemberRoleContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const MemberRole = styled.div`
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  align-items: center;
   gap: 4px;
-}
+  
+  svg {
+    font-size: 14px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+`;
 
-.message-image {
-  max-width: 150px;
-  max-height: 150px;
-  width: 100%; /* Tambahkan ini */
-  height: auto; /* Tambahkan ini */
-  border-radius: 8px;
-  object-fit: cover;
-}
+const MemberActions = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+`;
 
-.message-video {
-  max-width: 150px;
-  max-height: 150px;
-  width: 100%; /* Tambahkan ini */
-  height: auto; /* Tambahkan ini */
-  border-radius: 8px;
-  object-fit: cover;
-}
- 
-.message-caption {
-  margin: 0;
-  padding: 4px 8px;
-  background: rgba(0,0,0,0.1);
-  border-radius: 4px;
-}
-`}
-</style>
+const ActionButton = styled.button`
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  
+  ${props => props.$kick && `
+    background: #ff4757;
+    color: white;
+    
+    &:hover {
+      background: #ff3838;
+      transform: scale(1.1);
+    }
+  `}
+  
+  ${props => props.$promote && `
+    background: #4a6cf7;
+    color: white;
+    
+    &:hover {
+      background: #3b5ce6;
+      transform: scale(1.1);
+    }
+  `}
+`;
 
 export default ChatPage;

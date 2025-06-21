@@ -174,6 +174,10 @@
   background-color: #f5f5f5;
 }
 
+.menu-item.view-group-detail {
+  color: #3498db;
+}
+
 .menu-item.delete-chat {
   color: #e74c3c;
 }
@@ -639,4 +643,35 @@ main {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.message-media {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.message-image {
+  max-width: 150px;
+  max-height: 150px;
+  width: 100%; /* Tambahkan ini */
+  height: auto; /* Tambahkan ini */
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.message-video {
+  max-width: 150px;
+  max-height: 150px;
+  width: 100%; /* Tambahkan ini */
+  height: auto; /* Tambahkan ini */
+  border-radius: 8px;
+  object-fit: cover;
+}
+ 
+.message-caption {
+  margin: 0;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 4px;
 }
