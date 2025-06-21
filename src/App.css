@@ -197,20 +197,25 @@
 
 .message {
   max-width: 70%;
-  padding: 10px 15px;
-  border-radius: 15px;
+  padding: 0; /* Hapus padding langsung dari .message */
   margin-bottom: 10px;
   word-wrap: break-word;
+  display: flex; /* Menggunakan flexbox untuk mengatur konten pesan */
+  flex-direction: column; /* Konten pesan diatur secara vertikal */
 }
 
 .message.sent {
   align-self: flex-end;
-  background-color: transparent;
-  padding: 0;
-  margin: 5px 0;
+  align-items: flex-end; /* Mengatur konten pesan yang dikirim ke kanan */
 }
 
-.message.sent > p {
+.message.received {
+  align-self: flex-start;
+  align-items: flex-start; /* Mengatur konten pesan yang diterima ke kiri */
+}
+
+.message.sent > p,
+.message.sent .message-media {
   background-color: #00FA04; /* Warna hijau terang */
   color: white;
   padding: 10px 15px;
@@ -221,18 +226,32 @@
   text-align: left;
 }
 
-/* Style untuk pesan dengan media (gambar/video) dan teks */
-.message-media {
-  display: inline-block;
-  max-width: 100%;
-  border-radius: 15px;
-  overflow: hidden;
-  background-color: #00FA04; /* Warna hijau terang */
-}
-
-/* Untuk pesan received */
+.message.received > p,
 .message.received .message-media {
   background-color: #2A8BF2; /* Warna biru baru */
+  color: white; /* Teks putih untuk kontras */
+  padding: 10px 15px;
+  border-radius: 15px;
+  max-width: 100%;
+  display: inline-block;
+  margin-left: 45px; /* Sesuaikan dengan margin-left message-sender-info */
+}
+
+/* Style untuk pesan dengan media (gambar/video) dan teks */
+.message-media {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 15px; /* Terapkan border-radius di sini */
+  overflow: hidden;
+}
+
+/* Hapus border radius dari media jika ada caption */
+.message-media:has(.message-caption) img,
+.message-media:has(.message-caption) video,
+.message-media:has(.message-caption) .document-file {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .message-media img,
@@ -254,33 +273,31 @@
   text-align: left;
 }
 
-.message.received .message-caption {
-  color: white; /* Teks putih untuk pesan diterima juga */
+.message-sender-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  margin-left: 45px; /* Sesuaikan dengan lebar foto profil + margin */
+  font-size: 12px;
+  color: #555;
+  font-weight: bold;
 }
 
-/* Hapus border radius dari media jika ada caption */
-.message-media:has(.message-caption) img,
-.message-media:has(.message-caption) video,
-.message-media:has(.message-caption) .document-file {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+.message-sender-info img {
+  width: 32px; /* Ukuran foto profil yang lebih besar */
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+  position: absolute; /* Posisikan absolut */
+  left: 0px; /* Sesuaikan dengan padding kiri pesan */
+  top: 0; /* Sesuaikan posisi vertikal */
 }
 
 .message.received {
   align-self: flex-start;
-  background-color: transparent;
-  padding: 0;
-  margin: 5px 0;
-}
-
-.message.received > p {
-  background-color: #2A8BF2; /* Warna biru baru */
-  color: white; /* Teks putih untuk kontras */
-  padding: 10px 15px;
-  border-radius: 15px;
-  max-width: 100%;
-  display: inline-block;
-  margin: 0;
+  align-items: flex-start; /* Mengatur konten pesan yang diterima ke kiri */
+  position: relative; /* Diperlukan untuk posisi absolut anak */
 }
 
 .message p {
