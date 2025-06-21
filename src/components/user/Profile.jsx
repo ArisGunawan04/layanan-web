@@ -36,6 +36,25 @@ const ProfileHeader = styled.div`
   border-radius: 12px;
   padding: 30px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+`;
+
+const BioContainer = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+`;
+
+const BioTitle = styled.h3`
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const ProfileInfo = styled.div`
@@ -139,10 +158,9 @@ const EditButton = styled.button`
 
 const StatsContainer = styled.div`
   display: flex;
-  gap: 20px; /* Mengurangi jarak */
-  padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
-  justify-content: center; /* Memastikan terpusat secara default */
+  gap: 20px;
+  justify-content: center;
+  margin: 10px 0;
 `;
 
 const StatItem = styled(Link)`
@@ -427,9 +445,19 @@ const Profile = () => {
             <UserDetails>
               <UserName>{user.name}</UserName>
               <Username>@{user.username}</Username>
-              <Bio>{user.bio || 'Belum ada bio'}</Bio>
               <JoinDate>Bergabung {formatDate(user.createdAt)}</JoinDate>
             </UserDetails>
+            
+            <StatsContainer>
+              <StatItem to={`/follow/${user.id}`}>
+                <StatNumber>{followersCount}</StatNumber>
+                <StatLabel>Followers</StatLabel>
+              </StatItem>
+              <StatItem to={`/follow/${user.id}`}>
+                <StatNumber>{followingCount}</StatNumber>
+                <StatLabel>Following</StatLabel>
+              </StatItem>
+            </StatsContainer>
             
             <ActionButtons>
               {isOwnProfile ? (
@@ -441,18 +469,12 @@ const Profile = () => {
               )}
             </ActionButtons>
           </ProfileInfo>
-          
-          <StatsContainer>
-            <StatItem to={`/follow/${user.id}`}>
-              <StatNumber>{followersCount}</StatNumber>
-              <StatLabel>Followers</StatLabel>
-            </StatItem>
-            <StatItem to={`/follow/${user.id}`}>
-              <StatNumber>{followingCount}</StatNumber>
-              <StatLabel>Following</StatLabel>
-            </StatItem>
-          </StatsContainer>
         </ProfileHeader>
+        
+        <BioContainer>
+          <BioTitle>Tentang Saya</BioTitle>
+          <Bio>{user.bio || 'Belum ada bio'}</Bio>
+        </BioContainer>
       </LeftColumn>
       
       <RightColumn>

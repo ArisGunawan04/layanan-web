@@ -7,11 +7,10 @@ import axios from 'axios';
 const Container = styled.div`
   display: flex;
   min-height: calc(100vh - 40px);
-  margin-left: 220px;
   background: white;
   
   @media (max-width: 768px) {
-    margin-left: 0;
+    flex-direction: column;
   }
 `;
 
@@ -21,22 +20,31 @@ const MainContent = styled.div`
   flex-direction: column;
   padding: 30px;
   overflow-y: auto;
-  max-width: calc(100vw - 470px);
+  max-width: calc(100% - 200px);
   
   @media (max-width: 768px) {
     max-width: 100%;
+    padding: 15px;
   }
 `;
 
 
 
 const SettingsSidebar = styled.div`
-  width: 250px;
+  width: 200px;
   background: #f8f9fa;
-  border-right: 1px solid #e0e0e0;
-  padding: 20px;
+  padding: 20px 0 20px 20px;
   min-height: calc(100vh - 40px);
   overflow-y: auto;
+  position: sticky;
+  top: 0;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 15px;
+    min-height: auto;
+    position: relative;
+  }
 `;
 
 const SidebarTitle = styled.h3`
