@@ -33,8 +33,8 @@ const Tab = styled.button`
   background: none;
   font-size: 16px;
   font-weight: 500;
-  color: ${props => props.active ? '#4a6cf7' : '#666'};
-  border-bottom: 2px solid ${props => props.active ? '#4a6cf7' : 'transparent'};
+  color: ${props => props.$active ? '#4a6cf7' : '#666'};
+  border-bottom: 2px solid ${props => props.$active ? '#4a6cf7' : 'transparent'};
   cursor: pointer;
   transition: all 0.3s ease;
   
@@ -149,14 +149,14 @@ const FollowList = ({ initialTab = 'followers' }) => {
       
       <TabContainer>
         <Tab 
-          active={activeTab === 'followers'}
+          $active={activeTab === 'followers'}
           onClick={() => setActiveTab('followers')}
         >
           Followers
           <CountBadge>{followers.length}</CountBadge>
         </Tab>
         <Tab 
-          active={activeTab === 'following'}
+          $active={activeTab === 'following'}
           onClick={() => setActiveTab('following')}
         >
           Following

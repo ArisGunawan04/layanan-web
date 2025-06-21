@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
+import { useNotification } from '../context/NotificationContext';
+import { FaTrash, FaCheck } from 'react-icons/fa';
 
 const NotifikasiContainer = styled.div`
   max-width: 600px;
@@ -17,6 +20,31 @@ const Header = styled.div`
   margin-bottom: 30px;
   padding-bottom: 15px;
   border-bottom: 1px solid #e0e0e0;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const ActionButton = styled.button`
+  background: none;
+  border: 1px solid #e0e0e0;
+  color: #666;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: #f5f8ff;
+    border-color: #4a6cf7;
+    color: #4a6cf7;
+  }
 `;
 
 const Title = styled.h1`
@@ -41,11 +69,42 @@ const NotifikasiItem = styled.div`
   border: 1px solid #e0e0e0;
   transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
   
   &:hover {
     background-color: #f5f8ff;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    
+    .delete-button {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+`;
+
+const DeleteButton = styled.button`
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  visibility: hidden;
+
+  &:hover {
+    background: #ff3742;
+    transform: translateY(-50%) scale(1.1);
   }
 `;
 
@@ -112,84 +171,48 @@ const EmptyState = styled.div`
 `;
 
 const Notifikasi = () => {
-  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const { 
+    notifications, 
+    unreadCount, 
+    fetchNotifications, 
+    markAllAsRead, 
+    deleteNotification, 
+    handleNotificationClick 
+  } = useNotification();
 
   useEffect(() => {
-    fetchNotifications();
+    loadNotifications();
   }, []);
 
-  const fetchNotifications = async () => {
+  const loadNotifications = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.get('http://localhost:5000/api/notifications', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (response.data.success) {
-        const formattedNotifications = response.data.data.map(notif => ({
-          ...notif,
-          time: notif.timeAgo
-        }));
-        setNotifications(formattedNotifications);
-      } else {
-        setError('Gagal memuat notifikasi');
-      }
+      await fetchNotifications();
     } catch (err) {
-      console.error('Error fetching notifications:', err);
-      // Fallback ke data mock jika API gagal
-      const mockNotifications = [
-        {
-          id: 'mock_1',
-          type: 'follow',
-          user: {
-            name: 'sudibjo pramono',
-            username: 'sudibjo_pramono',
-            foto_profil: '/default-avatar.svg'
-          },
-          message: 'mulai mengikuti Anda',
-          time: '2 jam yang lalu',
-          isRead: false
-        },
-        {
-          id: 'mock_2',
-          type: 'like',
-          user: {
-            name: 'sudibjo pramono',
-            username: 'sudibjo_pramono', 
-            foto_profil: '/default-avatar.svg'
-          },
-          message: 'menyukai postingan Anda "glory glory man utd"',
-          time: '5 jam yang lalu',
-          isRead: false
-        }
-      ];
-      setNotifications(mockNotifications);
+      console.error('Error loading notifications:', err);
+      setError('Gagal memuat notifikasi');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNotificationClick = (notification) => {
-    // Mark as read
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === notification.id 
-          ? { ...notif, isRead: true }
-          : notif
-      )
-    );
-    
-    // Navigate based on notification type
-    if (notification.type === 'follow') {
-      // Navigate to user profile
-      console.log('Navigate to profile:', notification.user.username);
-    } else if (notification.type === 'like' || notification.type === 'comment') {
-      // Navigate to post
-      console.log('Navigate to post');
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead();
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId, e) => {
+    e.stopPropagation(); // Prevent triggering the notification click
+    try {
+      await deleteNotification(notificationId);
+    } catch (error) {
+      console.error('Error deleting notification:', error);
     }
   };
 
@@ -224,6 +247,13 @@ const Notifikasi = () => {
     <NotifikasiContainer>
       <Header>
         <Title>notifikasi</Title>
+        <HeaderActions>
+          {unreadCount > 0 && (
+            <ActionButton onClick={handleMarkAllAsRead}>
+              <FaCheck /> Tandai Semua Dibaca
+            </ActionButton>
+          )}
+        </HeaderActions>
       </Header>
       
       {notifications.length === 0 ? (
@@ -240,20 +270,25 @@ const Notifikasi = () => {
               onClick={() => handleNotificationClick(notification)}
             >
               <ProfileImage 
-                src={notification.user.foto_profil ? `http://localhost:5000${notification.user.foto_profil}` : '/default-avatar.svg'} 
-                alt={notification.user.name}
+                src={notification.user?.foto_profil ? `http://localhost:5000${notification.user.foto_profil}` : '/default-avatar.svg'} 
+                alt={notification.user?.name || 'User'}
                 onError={(e) => {
                   e.target.src = '/default-avatar.svg';
                 }}
               />
               <NotifikasiContent>
                 <NotifikasiText>
-                  <span className="username">{notification.user.name}</span>
-                  {' '}
                   <span className="action">{notification.message}</span>
                 </NotifikasiText>
-                <TimeStamp>{notification.time}</TimeStamp>
+                <TimeStamp>{notification.timeAgo || notification.time}</TimeStamp>
               </NotifikasiContent>
+              <DeleteButton 
+                className="delete-button"
+                onClick={(e) => handleDeleteNotification(notification.id, e)}
+                title="Hapus notifikasi"
+              >
+                <FaTrash />
+              </DeleteButton>
             </NotifikasiItem>
           ))}
         </NotifikasiList>

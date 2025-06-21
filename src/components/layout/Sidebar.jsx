@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 import { FaHome, FaComment, FaBell, FaUser, FaSignOutAlt, FaUsers, FaLayerGroup, FaSearch } from 'react-icons/fa';
+import NotificationBadge from '../notifications/NotificationBadge';
 
 const SidebarContainer = styled.div`
   width: 220px;
@@ -118,7 +119,11 @@ const Sidebar = ({ onLogout }) => {
         </NavItem>
         
         <NavItem to="/pemberitahuan" activeclassname="active">
-          <NavIcon><FaBell /></NavIcon>
+          <NavIcon>
+            <NotificationBadge>
+              <FaBell />
+            </NotificationBadge>
+          </NavIcon>
           <NavText>Pemberitahuan</NavText>
         </NavItem>
         
