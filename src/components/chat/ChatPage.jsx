@@ -5,6 +5,7 @@ import '../../App.css';
 import io from 'socket.io-client';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { FaEllipsisV, FaTrash, FaBan } from 'react-icons/fa';
 
 const ChatPage = () => {
   const [users, setUsers] = useState([]);
@@ -18,7 +19,11 @@ const ChatPage = () => {
   const [previewUrl, setPreviewUrl] = useState('');
   const [showMediaPreview, setShowMediaPreview] = useState(false);
   const [previewMediaUrl, setPreviewMediaUrl] = useState('');
+  const [showChatMenu, setShowChatMenu] = useState(false);
   const [previewMediaType, setPreviewMediaType] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmModalMessage, setConfirmModalMessage] = useState('');
+  const [confirmModalAction, setConfirmModalAction] = useState(null);
   const { id_penerima: initialRecipientId } = useParams();
   const messagesEndRef = useRef(null);
   const socket = useRef(null);
@@ -129,9 +134,21 @@ const ChatPage = () => {
 
     fetchUsers();
     
+    // Close chat menu when clicking outside
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.chat-menu-container')) {
+        setShowChatMenu(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    
     // Juga mengatur interval untuk memperbarui daftar pengguna setiap 30 detik
     const interval = setInterval(fetchUsers, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('click', handleClickOutside);
+    };
   }, []);
 
   const scrollToBottom = () => {
@@ -180,6 +197,38 @@ const ChatPage = () => {
   const handleUserSelect = (user) => {
     setSelectedUser(user);
     fetchMessages(user.user_id);
+  };
+
+  const handleDeleteChat = async () => {
+    if (!selectedUser) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/chats/delete-chat/${selectedUser.user_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      // Update UI dengan mengosongkan pesan
+      setMessages([]);
+      setShowChatMenu(false);
+      setShowConfirmModal(false);
+      
+      // Tampilkan notifikasi sukses
+      alert('Percakapan berhasil dihapus');
+    } catch (error) {
+      console.error('Gagal menghapus chat:', error);
+      let errorMessage = 'Gagal menghapus percakapan. Silakan coba lagi.';
+      if (error.response) {
+        // Server merespons dengan status error
+        errorMessage = error.response.data.message || errorMessage;
+      } else if (error.request) {
+        // Permintaan dikirim tapi tidak ada respons
+        errorMessage = 'Tidak ada respons dari server. Periksa koneksi internet Anda.';
+      }
+      alert(errorMessage);
+    }
   };
 
   const handleSendMessage = async (e) => {
@@ -362,6 +411,47 @@ const ChatPage = () => {
                     {isUserOnline(selectedUser.last_seen) ? <span style={{ color: 'green' }}>sedang aktif</span> : `aktif ${getLastSeenText(selectedUser.last_seen)}`}
                   </span>
                 </div>
+              </div>
+              <div className="chat-menu-container">
+                <button 
+                  className="chat-menu-button"
+                  onClick={() => setShowChatMenu(!showChatMenu)}
+                >
+                  <FaEllipsisV />
+                </button>
+                {showChatMenu && (
+                   <div className="chat-dropdown-menu">
+                     <button 
+                       className="menu-item delete-chat"
+                       onClick={() => {
+                         setConfirmModalMessage('Apakah Anda yakin ingin menghapus semua pesan dalam chat ini?');
+                         setConfirmModalAction(() => () => {
+                           handleDeleteChat();
+                         });
+                         setShowConfirmModal(true);
+                         setShowChatMenu(false);
+                       }}
+                     >
+                       <FaTrash /> Hapus Chat
+                     </button>
+                     <button
+                       className="menu-item block-user"
+                       onClick={() => {
+                         setConfirmModalMessage(`Apakah Anda yakin ingin memblokir ${selectedUser.username}?`);
+                         setConfirmModalAction(() => () => {
+                           // TODO: Implement block user functionality
+                           console.log('Block user:', selectedUser.username);
+                           setShowChatMenu(false);
+                           setShowConfirmModal(false);
+                         });
+                         setShowConfirmModal(true);
+                         setShowChatMenu(false);
+                       }}
+                     >
+                       <FaBan /> Blokir Pengguna
+                     </button>
+                   </div>
+                 )}
               </div>
             </div>
             <div className="messages">
@@ -600,11 +690,28 @@ const ChatPage = () => {
         ) : (
           <div className="no-chat-selected">Pilih pengguna untuk memulai chat</div>
         )}
+        {/* Custom Confirmation Modal */}
+        {showConfirmModal && (
+          <div className="custom-confirm-modal-overlay">
+            <div className="custom-confirm-modal-content">
+              <p>{confirmModalMessage}</p>
+              <div className="custom-confirm-modal-buttons">
+                <button onClick={() => {
+                  if (confirmModalAction) {
+                    confirmModalAction();
+                  }
+                  setShowConfirmModal(false);
+                }}>Ya</button>
+                <button onClick={() => setShowConfirmModal(false)}>Tidak</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Media Preview Modal */}
       {showMediaPreview && (
-        <div 
+        <div
           className="media-preview-overlay"
           style={{
             position: 'fixed',
@@ -621,7 +728,7 @@ const ChatPage = () => {
           }}
           onClick={() => setShowMediaPreview(false)}
         >
-          <div 
+          <div
              style={{
                position: 'relative',
                maxWidth: '95vw',
