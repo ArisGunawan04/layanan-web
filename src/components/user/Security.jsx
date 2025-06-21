@@ -1,44 +1,56 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaSave, FaUser } from 'react-icons/fa';
 import axios from 'axios';
 
 // Styled Components
 const Container = styled.div`
   display: flex;
   min-height: calc(100vh - 40px);
-  margin-left: 220px;
-  background-color: #f8f9fa;
+  background: white;
   
   @media (max-width: 768px) {
-    margin-left: 0;
+    flex-direction: column;
   }
 `;
 
 const MainContent = styled.div`
   flex: 1;
   display: flex;
-  max-width: calc(100vw - 470px);
+  flex-direction: column;
+  padding: 30px;
+  overflow-y: auto;
+  max-width: calc(100% - 200px);
   
   @media (max-width: 768px) {
     max-width: 100%;
+    padding: 15px;
   }
 `;
 
 const SettingsSidebar = styled.div`
-  width: 250px;
-  background-color: white;
-  border-right: 1px solid #e9ecef;
-  padding: 20px;
+  width: 200px;
+  background: #f8f9fa;
+  padding: 20px 0 20px 20px;
   min-height: calc(100vh - 40px);
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 15px;
+    min-height: auto;
+    position: relative;
+  }
 `;
 
 const SidebarTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 20px;
+  margin: 0 0 20px 0;
   color: #333;
+  font-size: 16px;
+  font-weight: 600;
 `;
 
 const MenuList = styled.ul`
@@ -48,59 +60,71 @@ const MenuList = styled.ul`
 `;
 
 const MenuItem = styled.li`
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 `;
 
-const MenuLink = styled.div`
-  display: block;
+const MenuLink = styled.button`
+  width: 100%;
+  text-align: left;
+  background: ${props => props.active ? '#2A8BF2' : 'transparent'};
+  color: ${props => props.active ? 'white' : '#666'};
+  border: none;
   padding: 12px 16px;
-  color: ${props => props.active ? '#007bff' : '#666'};
-  background-color: ${props => props.active ? '#f0f8ff' : 'transparent'};
-  text-decoration: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: #f8f9fa;
-    color: #007bff;
+    background: ${props => props.active ? '#1a7bd9' : '#e9ecef'};
+    color: ${props => props.active ? 'white' : '#333'};
   }
 `;
 
 const SecuritySection = styled.div`
-  flex: 1;
-  padding: 20px;
-  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 60px; /* Meningkatkan jarak antar section */
+  align-items: flex-start;
+  margin-bottom: 40px;
+  padding: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+  width: 100%;
 `;
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 2px solid #2A8BF2;
 `;
 
 const Title = styled.h2`
+  margin: 0;
+  color: #007bff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 24px;
   font-weight: 600;
-  color: #333;
-  margin: 0;
 `;
 
 const CloseButton = styled.button`
   background: none;
   border: none;
   font-size: 20px;
-  color: #666;
   cursor: pointer;
+  color: #666;
   padding: 8px;
   border-radius: 50%;
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: #f8f9fa;
+    background: #f8f9fa;
     color: #333;
   }
 `;
@@ -108,15 +132,20 @@ const CloseButton = styled.button`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
+  width: 100%;
+  max-width: 600px; /* Lebar maksimum form input */
+  margin: 0 auto; /* Posisi tengah */
 `;
 
 const FormSection = styled.div`
   background: white;
-  padding: 24px;
+  padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 800px; /* Lebar maksimum form section */
+  margin: 0 auto; /* Posisi tengah */
 `;
 
 const SectionTitle = styled.h3`
@@ -127,92 +156,88 @@ const SectionTitle = styled.h3`
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Label = styled.label`
-  display: block;
   font-weight: 500;
-  color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  color: #555;
   font-size: 14px;
 `;
 
 const Input = styled.input`
-  width: 100%;
   padding: 12px 16px;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
   transition: border-color 0.2s ease;
+  background: white;
   
   &:focus {
     outline: none;
     border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-  }
-  
-  &::placeholder {
-    color: #999;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
   }
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 15px;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
 `;
 
 const Button = styled.button`
-  padding: 12px 24px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   transition: all 0.2s ease;
-`;
-
-const CancelButton = styled(Button)`
-  background-color: #f8f9fa;
-  color: #666;
-  
-  &:hover {
-    background-color: #e9ecef;
-  }
+  min-width: 100px;
 `;
 
 const SaveButton = styled(Button)`
-  background-color: #007bff;
+  background: #007bff;
   color: white;
   
   &:hover {
-    background-color: #0056b3;
+    background: #0056b3;
   }
   
   &:disabled {
-    background-color: #ccc;
+    background: #ccc;
     cursor: not-allowed;
   }
 `;
 
+const CancelButton = styled(Button)`
+  background: #dc3545;
+  color: white;
+  
+  &:hover {
+    background: #c82333;
+  }
+`;
+
 const ErrorMessage = styled.div`
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  border: 1px solid #f5c6cb;
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 5px;
 `;
 
 const SuccessMessage = styled.div`
-  background-color: #d4edda;
-  color: #155724;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  border: 1px solid #c3e6cb;
+  color: #28a745;
+  font-size: 14px;
+  margin-top: 5px;
 `;
 
 const Security = () => {
@@ -322,32 +347,38 @@ const Security = () => {
   };
 
   const handleCancel = () => {
-    navigate('/profile');
+    navigate('/profil');
   };
 
   return (
     <Container>
+      <SettingsSidebar>
+        <SidebarTitle>Pengaturan</SidebarTitle>
+        <MenuList>
+          <MenuItem>
+              <MenuLink onClick={() => navigate('/edit-profil')}>
+                Edit Profil
+              </MenuLink>
+            </MenuItem>
+            <MenuItem>
+              <MenuLink active={true}>
+                Keamanan
+              </MenuLink>
+            </MenuItem>
+        </MenuList>
+      </SettingsSidebar>
+      
       <MainContent>
-        <SettingsSidebar>
-          <SidebarTitle>Pengaturan</SidebarTitle>
-          <MenuList>
-            <MenuItem>
-              <MenuLink onClick={() => navigate('/edit-profile')}>Edit Profil</MenuLink>
-            </MenuItem>
-            <MenuItem>
-              <MenuLink active>Keamanan</MenuLink>
-            </MenuItem>
-          </MenuList>
-        </SettingsSidebar>
-        
-        <SecuritySection>
-          <Header>
-            <Title>Keamanan</Title>
-            <CloseButton onClick={handleCancel}>
-              <FaTimes />
-            </CloseButton>
-          </Header>
+        <Header>
+          <Title>
+            <FaUser /> Keamanan
+          </Title>
+          <CloseButton onClick={handleCancel}>
+            <FaTimes />
+          </CloseButton>
+        </Header>
 
+        <SecuritySection>
           {error && <ErrorMessage>{error}</ErrorMessage>}
           {success && <SuccessMessage>{success}</SuccessMessage>}
 
@@ -380,8 +411,11 @@ const Security = () => {
                 />
               </FormGroup>
               <ButtonGroup>
+                <CancelButton type="button" onClick={handleCancel}>
+                  <FaTimes /> Batal
+                </CancelButton>
                 <SaveButton type="submit" disabled={loading}>
-                  {loading ? 'Menyimpan...' : 'Simpan'}
+                  <FaSave /> {loading ? 'Menyimpan...' : 'Simpan'}
                 </SaveButton>
               </ButtonGroup>
             </Form>
@@ -429,10 +463,10 @@ const Security = () => {
               </FormGroup>
               <ButtonGroup>
                 <CancelButton type="button" onClick={handleCancel}>
-                  Batal
+                  <FaTimes /> Batal
                 </CancelButton>
                 <SaveButton type="submit" disabled={loading}>
-                  {loading ? 'Menyimpan...' : 'Simpan'}
+                  <FaSave /> {loading ? 'Menyimpan...' : 'Simpan'}
                 </SaveButton>
               </ButtonGroup>
             </Form>
