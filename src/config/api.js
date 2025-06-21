@@ -39,6 +39,22 @@ const API_CONFIG = {
     },
     UPLOADS: {
       CHAT_MEDIA: '/api/upload/chat_media'
+    },
+    GROUPS: {
+      BASE: '/api/groups',
+      CREATE: '/api/groups/create',
+      MY_GROUPS: '/api/groups/my-groups',
+      DETAIL: (groupId) => `/api/groups/${groupId}`,
+      UPDATE: (groupId) => `/api/groups/${groupId}`,
+      DELETE: (groupId) => `/api/groups/${groupId}`,
+      ADD_MEMBER: (groupId) => `/api/groups/${groupId}/members`,
+      REMOVE_MEMBER: (groupId, userId) => `/api/groups/${groupId}/members/${userId}`,
+      LEAVE: (groupId) => `/api/groups/${groupId}/leave`,
+      TRANSFER_ADMIN: (groupId) => `/api/groups/${groupId}/transfer-admin`,
+      SEND_MESSAGE: (groupId) => `/api/groups/${groupId}/messages`,
+      GET_MESSAGES: (groupId) => `/api/groups/${groupId}/messages`,
+      DELETE_MESSAGE: (messageId) => `/api/groups/messages/${messageId}`,
+      UPLOAD_MEDIA: (groupId) => `/api/groups/${groupId}/upload`
     }
   }
 };
