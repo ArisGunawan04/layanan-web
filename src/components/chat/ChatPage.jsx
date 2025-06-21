@@ -33,6 +33,9 @@ const ChatPage = () => {
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
   const [showGroupDetailModal, setShowGroupDetailModal] = useState(false);
   const [groupDetailData, setGroupDetailData] = useState(null);
+  const [showChangeGroupPhotoModal, setShowChangeGroupPhotoModal] = useState(false);
+  const [selectedGroupPhoto, setSelectedGroupPhoto] = useState(null);
+  const [groupPhotoPreview, setGroupPhotoPreview] = useState('');
   const messagesEndRef = useRef(null);
   const socket = useRef(null);
   const navigate = useNavigate();
@@ -131,6 +134,80 @@ const ChatPage = () => {
       console.error('Error updating member role:', error);
       alert('Gagal mengubah role anggota. Silakan coba lagi.');
     }
+  };
+
+  const handleChangeGroupPhoto = () => {
+    setShowChangeGroupPhotoModal(true);
+  };
+
+  const handleGroupPhotoSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        setSelectedGroupPhoto(file);
+        const previewUrl = URL.createObjectURL(file);
+        setGroupPhotoPreview(previewUrl);
+      } else {
+        alert('Hanya file gambar yang diizinkan');
+      }
+    }
+  };
+
+  const handleUploadGroupPhoto = async () => {
+    if (!selectedGroupPhoto || !selectedGroup) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', selectedGroupPhoto);
+
+      const response = await axios.put(
+        `http://localhost:5000/api/groups/${selectedGroup.id_grup}/photo`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      // Update group data
+      setSelectedGroup(prev => ({
+        ...prev,
+        foto_grup: response.data.foto_grup
+      }));
+
+      // Refresh group detail data if modal is open
+      if (groupDetailData) {
+        setGroupDetailData(prev => ({
+          ...prev,
+          foto_grup: response.data.foto_grup
+        }));
+      }
+
+      // Reset states
+      setSelectedGroupPhoto(null);
+      setGroupPhotoPreview('');
+      setShowChangeGroupPhotoModal(false);
+      
+      alert('Foto grup berhasil diubah!');
+      
+      // Refresh groups list
+      fetchGroups();
+    } catch (error) {
+      console.error('Error uploading group photo:', error);
+      alert('Gagal mengubah foto grup. Silakan coba lagi.');
+    }
+  };
+
+  const cancelGroupPhotoChange = () => {
+    if (groupPhotoPreview) {
+      URL.revokeObjectURL(groupPhotoPreview);
+    }
+    setSelectedGroupPhoto(null);
+    setGroupPhotoPreview('');
+    setShowChangeGroupPhotoModal(false);
   };
 
   useEffect(() => {
@@ -305,8 +382,11 @@ const ChatPage = () => {
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
+      if (groupPhotoPreview) {
+        URL.revokeObjectURL(groupPhotoPreview);
+      }
     };
-  }, [previewUrl]);
+  }, [previewUrl, groupPhotoPreview]);
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
@@ -506,7 +586,10 @@ const ChatPage = () => {
                       src={user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg'} 
                       alt={user.username} 
                       className="profile-pic"
-                      onError={(e) => { e.target.src = '/default-avatar.svg'; }}
+                      onError={(e) => { 
+                        e.target.onerror = null; 
+                        e.target.src = '/default-avatar.svg'; 
+                      }}
                     />
                     <div className="user-status-container">
                       <span>{user.username}</span>
@@ -538,30 +621,52 @@ const ChatPage = () => {
             </div>
             <ul>
               {groups.length > 0 ? (
-                groups.map((group) => (
-                  <li
-                    key={group.id_grup}
-                    onClick={() => handleGroupSelect(group)}
-                    className={selectedGroup?.id_grup === group.id_grup ? 'active' : ''}
-                  >
-                    <img 
-                      src={group.foto_grup ? `http://localhost:5000${group.foto_grup}` : '/default-avatar.svg'} 
-                      alt={group.nama_grup} 
-                      className="profile-pic"
-                      onError={(e) => { e.target.src = '/default-avatar.svg'; }}
-                    />
-                    <div className="user-status-container">
-                      <span style={{fontWeight: 'bold'}}>
-                        {group.nama_grup || group.Group?.nama_group || 'Grup Tanpa Nama'}
-                      </span>
-                      <div className="user-status">
-                        <span className="status-text">
-                          {group.Group?.GroupMembers?.length || group.GroupMembers?.length || group.jumlah_anggota || 0} anggota
+                groups.map((group) => {
+                  // Normalisasi data grup seperti di handleGroupSelect
+                  const normalizedGroup = {
+                    ...group,
+                    id_grup: group.id_grup || group.id_group,
+                    ...(group.Group && {
+                      nama_grup: group.nama_grup || group.Group.nama_group,
+                      deskripsi: group.deskripsi || group.Group.deskripsi || '',
+                      id_admin: group.id_admin || group.Group.id_admin,
+                      foto_grup: group.foto_grup || group.Group.foto_grup
+                    })
+                  };
+                  
+                  return (
+                    <li
+                      key={normalizedGroup.id_grup}
+                      onClick={() => handleGroupSelect(normalizedGroup)}
+                      className={selectedGroup?.id_grup === normalizedGroup.id_grup ? 'active' : ''}
+                    >
+                      <img 
+                        src={normalizedGroup.foto_grup ? 
+                          `http://localhost:5000${normalizedGroup.foto_grup.startsWith('/') ? '' : '/'}${normalizedGroup.foto_grup}` : 
+                          '/default-avatar.svg'
+                        } 
+                        alt={normalizedGroup.nama_grup} 
+                        className="profile-pic"
+                        onError={(e) => { 
+                          e.target.onerror = null;
+                          e.target.src = '/default-avatar.svg'; 
+                        }}
+                      />
+                      <div className="user-status-container">
+                        <span style={{fontWeight: 'bold'}}>
+                          {normalizedGroup.nama_grup || 'Grup Tanpa Nama'}
                         </span>
+                        <div className="user-status">
+                          <span className="status-text">
+                            {normalizedGroup.Group?.GroupMembers?.length || 
+                             normalizedGroup.GroupMembers?.length || 
+                             normalizedGroup.jumlah_anggota || 0} anggota
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                ))
+                    </li>
+                  );
+                })
               ) : (
                 <li>Tidak ada grup.</li>
               )}
@@ -574,7 +679,7 @@ const ChatPage = () => {
           <>
             <div className="chat-header">
               <img 
-                  src={selectedUser ? (selectedUser.foto_profil ? `http://localhost:5000${selectedUser.foto_profil}` : '/default-avatar.svg') : (selectedGroup.foto_grup ? `http://localhost:5000${selectedGroup.foto_grup}` : '/default-avatar.svg')} 
+                  src={selectedUser ? (selectedUser.foto_profil ? `http://localhost:5000${selectedUser.foto_profil.startsWith('/') ? '' : '/'}${selectedUser.foto_profil}` : '/default-avatar.svg') : (selectedGroup.foto_grup ? `http://localhost:5000${selectedGroup.foto_grup.startsWith('/') ? '' : '/'}${selectedGroup.foto_grup}` : '/default-avatar.svg')} 
                   alt={selectedUser ? selectedUser.username : selectedGroup.nama_grup} 
                   className="profile-pic"
                   onError={(e) => { e.target.src = '/default-avatar.svg'; }}
@@ -876,9 +981,56 @@ const ChatPage = () => {
             </ModalHeader>
             
             <ModalBody>
-              <GroupModalIcon>
-                <FaUsers />
-              </GroupModalIcon>
+              <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto 20px' }}>
+                {groupDetailData.foto_grup ? (
+                  <img 
+                    src={`http://localhost:5000${groupDetailData.foto_grup}`}
+                    alt={groupDetailData.nama_group}
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '16px',
+                      objectFit: 'cover'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <GroupModalIcon style={{ display: groupDetailData.foto_grup ? 'none' : 'flex' }}>
+                  <FaUsers />
+                </GroupModalIcon>
+                {(() => {
+                  const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+                  const isAdmin = groupDetailData.id_admin === currentUser?.user_id;
+                  return isAdmin ? (
+                    <button
+                      onClick={handleChangeGroupPhoto}
+                      style={{
+                        position: 'absolute',
+                        bottom: '-5px',
+                        right: '-5px',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        border: 'none',
+                        background: '#4a6cf7',
+                        color: 'white',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px'
+                      }}
+                      title="Ubah Foto Grup"
+                    >
+                      ✏️
+                    </button>
+                  ) : null;
+                })()
+                }
+              </div>
               
               <GroupModalName>{groupDetailData.nama_group}</GroupModalName>
               
@@ -901,7 +1053,37 @@ const ChatPage = () => {
               
               <AdminInfo>
                 <AdminAvatar>
-                  {(groupDetailData.Admin?.name || groupDetailData.Admin?.username || 'A').charAt(0).toUpperCase()}
+                  {groupDetailData.Admin?.foto_profil ? (
+                    <img 
+                      src={`http://localhost:5000${groupDetailData.Admin.foto_profil.startsWith('/') ? '' : '/'}${groupDetailData.Admin.foto_profil}`}
+                      alt={groupDetailData.Admin?.name || groupDetailData.Admin?.username || 'Admin'}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '50%',
+                        objectFit: 'cover'
+                      }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div style={{
+                    display: groupDetailData.Admin?.foto_profil ? 'none' : 'flex',
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    backgroundColor: '#4a6cf7',
+                    color: 'white',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '18px',
+                    fontWeight: 'bold'
+                  }}>
+                    {(groupDetailData.Admin?.name || groupDetailData.Admin?.username || 'A').charAt(0).toUpperCase()}
+                  </div>
                 </AdminAvatar>
                 <AdminDetails>
                   <AdminName>{groupDetailData.Admin?.name || groupDetailData.Admin?.username || 'Unknown'}</AdminName>
@@ -947,7 +1129,37 @@ const ChatPage = () => {
                     return (
                       <MemberItem key={index}>
                         <MemberAvatar>
-                          {(member.User?.name || member.User?.username || 'U').charAt(0).toUpperCase()}
+                          {member.User?.foto_profil ? (
+                            <img 
+                              src={`http://localhost:5000${member.User.foto_profil.startsWith('/') ? '' : '/'}${member.User.foto_profil}`}
+                              alt={member.User?.name || member.User?.username || 'User'}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: '50%',
+                                objectFit: 'cover'
+                              }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div style={{
+                            display: member.User?.foto_profil ? 'none' : 'flex',
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '50%',
+                            backgroundColor: '#4a6cf7',
+                            color: 'white',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '16px',
+                            fontWeight: 'bold'
+                          }}>
+                            {(member.User?.name || member.User?.username || 'U').charAt(0).toUpperCase()}
+                          </div>
                         </MemberAvatar>
                         <MemberInfo>
                           <MemberName>{member.User?.name || member.User?.username || 'Unknown'}</MemberName>
@@ -1017,6 +1229,88 @@ const ChatPage = () => {
                   })}
                 </MembersList>
               )}
+            </ModalBody>
+          </ModalContent>
+        </GroupDetailModal>
+      )}
+
+      {showChangeGroupPhotoModal && (
+        <GroupDetailModal>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>Ubah Foto Grup</ModalTitle>
+              <CloseButton onClick={cancelGroupPhotoChange}>×</CloseButton>
+            </ModalHeader>
+            
+            <ModalBody>
+              <div style={{ textAlign: 'center' }}>
+                {groupPhotoPreview ? (
+                  <div style={{ marginBottom: '20px' }}>
+                    <img 
+                      src={groupPhotoPreview}
+                      alt="Preview"
+                      style={{
+                        width: '120px',
+                        height: '120px',
+                        borderRadius: '16px',
+                        objectFit: 'cover',
+                        border: '2px solid #e0e0e0'
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: '16px',
+                    border: '2px dashed #ccc',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 20px',
+                    color: '#666'
+                  }}>
+                    Pilih Foto
+                  </div>
+                )}
+                
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleGroupPhotoSelect}
+                  style={{ marginBottom: '20px' }}
+                />
+                
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                  <button
+                    onClick={handleUploadGroupPhoto}
+                    disabled={!selectedGroupPhoto}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: selectedGroupPhoto ? '#4a6cf7' : '#ccc',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: selectedGroupPhoto ? 'pointer' : 'not-allowed'
+                    }}
+                  >
+                    Simpan
+                  </button>
+                  <button
+                    onClick={cancelGroupPhotoChange}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#f0f0f0',
+                      color: '#333',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Batal
+                  </button>
+                </div>
+              </div>
             </ModalBody>
           </ModalContent>
         </GroupDetailModal>
@@ -1201,25 +1495,24 @@ const MemberItem = styled.div`
   border-bottom: 1px solid #e0e0e0;
   
   &:last-child {
-    border-bottom: none;
-  }
 `;
 
 const MemberAvatar = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #667eea;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 12px;
+width: 40px;
+height: 40px;
+border-radius: 50%;
+background-color: #e0e0e0;
+display: flex;
+align-items: center;
+justify-content: center;
+margin-right: 12px;
+overflow: hidden;
+position: relative;
+flex-shrink: 0;
 `;
 
 const MemberInfo = styled.div`
-  flex: 1;
+flex: 1;
 `;
 
 const MemberName = styled.div`
