@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { NotificationProvider, useNotification } from './context/NotificationContext';
+import NotificationToast from './components/notifications/NotificationToast';
 import Login from './components/Login';
 import Register from './components/Register';
 import Beranda from './components/home/Beranda';
@@ -26,8 +28,10 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-function App() {
+// Komponen untuk konten yang memerlukan NotificationContext
+const AppContent = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { toastNotifications, removeToastNotification, handleNotificationClick } = useNotification();
   
   useEffect(() => {
     // Cek apakah user sudah login
@@ -45,9 +49,8 @@ function App() {
   }, []);
   
   return (
-    <BrowserRouter>
-      <div className="App">
-        <Routes>
+    <div className="App">
+      <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
@@ -144,7 +147,23 @@ function App() {
             <Navigate to="/login" replace />
           } />
         </Routes>
+        
+        {/* Toast Notifications */}
+        <NotificationToast 
+          notifications={toastNotifications}
+          onClose={removeToastNotification}
+          onToastClick={handleNotificationClick}
+        />
       </div>
+    );
+  };
+
+function App() {
+  return (
+    <BrowserRouter>
+      <NotificationProvider>
+        <AppContent />
+      </NotificationProvider>
     </BrowserRouter>
   );
 }
