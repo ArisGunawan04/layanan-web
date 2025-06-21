@@ -201,25 +201,103 @@
 
 .message.sent {
   align-self: flex-end;
-  background-color: #007bff;
+  background-color: transparent;
+  padding: 0;
+  margin: 5px 0;
+}
+
+.message.sent > p {
+  background-color: #00FA04; /* Warna hijau terang */
   color: white;
-  border-bottom-right-radius: 2px;
+  padding: 10px 15px;
+  border-radius: 15px;
+  max-width: 100%;
+  display: inline-block;
+  margin: 0;
+  text-align: left;
+}
+
+/* Style untuk pesan dengan media (gambar/video) dan teks */
+.message-media {
+  display: inline-block;
+  max-width: 100%;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: #00FA04; /* Warna hijau terang */
+}
+
+/* Untuk pesan received */
+.message.received .message-media {
+  background-color: #2A8BF2; /* Warna biru baru */
+}
+
+.message-media img,
+.message-media video,
+.message-media .document-file {
+  display: block;
+  max-width: 100%;
+  border-radius: 0;
+  margin: 0;
+}
+
+.message-media .message-caption {
+  color: white; /* Teks putih */
+  padding: 12px 15px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  word-break: break-word;
+  text-align: left;
+}
+
+.message.received .message-caption {
+  color: white; /* Teks putih untuk pesan diterima juga */
+}
+
+/* Hapus border radius dari media jika ada caption */
+.message-media:has(.message-caption) img,
+.message-media:has(.message-caption) video,
+.message-media:has(.message-caption) .document-file {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .message.received {
   align-self: flex-start;
-  background-color: #e0e0e0;
-  color: #333;
-  border-bottom-left-radius: 2px;
+  background-color: transparent;
+  padding: 0;
+  margin: 5px 0;
+}
+
+.message.received > p {
+  background-color: #2A8BF2; /* Warna biru baru */
+  color: white; /* Teks putih untuk kontras */
+  padding: 10px 15px;
+  border-radius: 15px;
+  max-width: 100%;
+  display: inline-block;
+  margin: 0;
 }
 
 .message p {
   margin: 0;
 }
 
+.message-image {
+  max-width: 250px;
+  max-height: 250px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
 .message-video {
-  max-width: 200px;
-  max-height: 200px;
+  max-width: 150px;
+  max-height: 150px;
+  width: 100%;
+  height: auto;
   border-radius: 8px;
   object-fit: cover;
 }
@@ -342,7 +420,7 @@ main {
 }
 
 .attachment-button {
-  background-color: hsl(211, 100%, 50%);
+  background-color: #2A8BF2;
   position: relative;
   height: 40px;
   width: 40px;
@@ -353,7 +431,7 @@ main {
 }
 
 .attachment-button:hover {
-  background-color: #0056b3;
+  background-color: #1a7bd9;
 }
 
 .attachment-button svg {
@@ -481,7 +559,7 @@ main {
   padding: 12px;
   cursor: pointer;
   transition: background-color 0.2s;
-  background-color: #007bff;
+  background-color: #2A8BF2;
   color: white;
   margin-bottom: 5px;
   border-radius: 50%;
@@ -494,7 +572,7 @@ main {
 }
 
 .attachment-item:hover {
-  background-color: #0056b3;
+  background-color: #1a7bd9;
 }
 
 /* Custom Confirmation Modal Styles */
@@ -529,7 +607,7 @@ main {
 }
 
 .custom-confirm-modal-buttons button {
-  background-color: #007bff;
+  background-color: #2A8BF2;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -541,7 +619,7 @@ main {
 }
 
 .custom-confirm-modal-buttons button:hover {
-  background-color: #0056b3;
+  background-color: #1a7bd9;
 }
 
 .custom-confirm-modal-buttons button:last-child {

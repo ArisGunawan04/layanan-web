@@ -500,7 +500,7 @@ const ChatPage = () => {
                               <video
                                 src={`http://localhost:5000${msg.media_url}`}
                                 className="message-video"
-                                style={{ maxWidth: '250px', maxHeight: '250px', borderRadius: '8px', objectFit: 'cover', pointerEvents: 'none' }}
+                                style={{ borderRadius: '8px', objectFit: 'cover', pointerEvents: 'none' }}
                                 onError={(e) => {
                                   e.target.style.display = 'none';
                                   const errorDiv = document.createElement('div');
@@ -534,7 +534,6 @@ const ChatPage = () => {
                               border: '1px solid #ddd',
                               borderRadius: '8px',
                               backgroundColor: '#f9f9f9',
-                              maxWidth: '250px',
                               cursor: 'pointer'
                             }} onClick={() => window.open(`http://localhost:5000${msg.media_url}`, '_blank')}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -612,6 +611,65 @@ const ChatPage = () => {
                 </div>
               </div>
             )}
+            {/* Attachment dan preview file dalam satu baris */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 12 }}>
+              {/* Attachment button dan menu dihapus sesuai permintaan */}
+              <div style={{ width: 0, height: 0 }}></div>
+              {(previewUrl || selectedFile) && (
+  <div className="file-preview" style={{ marginLeft: 64, position: 'relative', display: 'inline-block', maxWidth: 180 }}>
+    {/* Tombol X di luar gambar/file */}
+    <button
+      type="button"
+      onClick={() => {
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl('');
+        }
+        setSelectedFile(null);
+      }}
+      style={{
+        position: 'absolute',
+        top: -18,
+        right: -18,
+        background: 'transparent',
+        color: '#e53935',
+        border: 'none',
+        borderRadius: 0,
+        width: 24,
+        height: 24,
+        fontSize: 22,
+        fontWeight: 'bold',
+        lineHeight: 1,
+        cursor: 'pointer',
+        zIndex: 3,
+        padding: 0,
+        boxShadow: 'none',
+      }}
+      aria-label="Hapus preview"
+      title="Hapus preview"
+    >
+      ×
+    </button>
+    {previewUrl ? (
+      <img src={previewUrl} alt="Preview" style={{ maxWidth: '160px', maxHeight: '160px', borderRadius: 8 }} />
+    ) : selectedFile ? (
+      <div style={{ 
+        padding: '14px', 
+        border: '1px solid #ccc', 
+        borderRadius: '8px', 
+        backgroundColor: '#f5f5f5',
+        maxWidth: '240px',
+        minWidth: '140px',
+        minHeight: '90px',
+        position: 'relative'
+      }}>
+        <div style={{ fontSize: '12px', color: '#666', wordBreak: 'break-all' }}>📄 {selectedFile.name}</div>
+        <div style={{ fontSize: '10px', color: '#999' }}>{(selectedFile.size / 1024).toFixed(1)} KB</div>
+      </div>
+    ) : null}
+  </div>
+)}
+            </div>
             <form onSubmit={handleSendMessage} className="message-input">
               <div className="attachment-container">
                 <button 
@@ -638,52 +696,52 @@ const ChatPage = () => {
                   </div>
                 )}
               </div>
-              {(previewUrl || selectedFile) && (
-                <div className="file-preview">
-                  {previewUrl ? (
-                    <img src={previewUrl} alt="Preview" style={{ maxWidth: '100px', maxHeight: '100px' }} />
-                  ) : selectedFile ? (
-                    <div style={{ 
-                      padding: '10px', 
-                      border: '1px solid #ccc', 
-                      borderRadius: '4px', 
-                      backgroundColor: '#f5f5f5',
-                      maxWidth: '200px'
-                    }}>
-                      <div style={{ fontSize: '12px', color: '#666' }}>📄 {selectedFile.name}</div>
-                      <div style={{ fontSize: '10px', color: '#999' }}>{(selectedFile.size / 1024).toFixed(1)} KB</div>
-                    </div>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (previewUrl) {
-                        URL.revokeObjectURL(previewUrl);
-                        setPreviewUrl('');
-                      }
-                      setSelectedFile(null);
-                    }}
-                    style={{
-                      background: 'red',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      padding: '2px 8px',
-                      marginLeft: '8px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Hapus
-                  </button>
-                </div>
-              )}
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Ketik pesan di sini..."
               />
-              <button type="submit">Kirim</button>
+              <button 
+                type="submit" 
+                style={{
+                  background: '#2A8BF2',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  padding: 0,
+                  marginLeft: '8px'
+                }}
+              >
+                <svg 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path 
+                    d="M22 2L11 13" 
+                    stroke="white" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                  <path 
+                    d="M22 2L15 22L11 13L2 9L22 2Z" 
+                    fill="white"
+                    stroke="white" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
             </form>
 
           </>
@@ -823,15 +881,19 @@ const ChatPage = () => {
 }
 
 .message-image {
-  max-width: 200px;
-  max-height: 200px;
+  max-width: 150px;
+  max-height: 150px;
+  width: 100%; /* Tambahkan ini */
+  height: auto; /* Tambahkan ini */
   border-radius: 8px;
   object-fit: cover;
 }
 
 .message-video {
-  max-width: 200px;
-  max-height: 200px;
+  max-width: 150px;
+  max-height: 150px;
+  width: 100%; /* Tambahkan ini */
+  height: auto; /* Tambahkan ini */
   border-radius: 8px;
   object-fit: cover;
 }

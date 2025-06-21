@@ -67,7 +67,7 @@ const MenuItem = styled.li`
 const MenuLink = styled.button`
   width: 100%;
   text-align: left;
-  background: ${props => props.active ? '#007bff' : 'transparent'};
+  background: ${props => props.active ? '#2A8BF2' : 'transparent'};
   color: ${props => props.active ? 'white' : '#666'};
   border: none;
   padding: 12px 16px;
@@ -77,7 +77,7 @@ const MenuLink = styled.button`
   transition: all 0.2s ease;
   
   &:hover {
-    background: ${props => props.active ? '#0056b3' : '#e9ecef'};
+    background: ${props => props.active ? '#1a7bd9' : '#e9ecef'};
     color: ${props => props.active ? 'white' : '#333'};
   }
 `;
@@ -111,7 +111,7 @@ const Header = styled.div`
   justify-content: space-between;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid #2A8BF2;
 `;
 
 const Title = styled.h2`
@@ -157,7 +157,7 @@ const Avatar = styled.img`
   height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #007bff;
+  border: 3px solid #2A8BF2;
 `;
 
 const AvatarUpload = styled.label`
