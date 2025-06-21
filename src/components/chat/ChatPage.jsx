@@ -72,16 +72,25 @@ const ChatPage = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // Log detail untuk debugging
-      console.log('Group detail data:', response.data);
-      console.log('Group members:', response.data.GroupMembers);
-      response.data.GroupMembers.forEach((member, idx) => {
-        console.log(`Member ${idx + 1}:`, {
-          name: member.User?.name || member.User?.username,
-          role: member.role,
-          isModerator: member.role?.toLowerCase() === 'moderator'
-        });
+      // Buat mapping user ID ke data pengguna untuk referensi cepat
+      const userMap = {};
+      response.data.GroupMembers?.forEach(member => {
+        if (member.User) {
+          userMap[member.id_user] = {
+            nama_pengirim: member.User.nama || member.User.username,
+            foto_pengirim: member.User.foto_profil || ''
+          };
+        }
       });
+      
+      // Update messages dengan data pengirim yang lengkap
+      setMessages(prevMessages => 
+        prevMessages.map(msg => ({
+          ...msg,
+          nama_pengirim: userMap[msg.id_pengirim]?.nama_pengirim || msg.nama_pengirim,
+          foto_pengirim: userMap[msg.id_pengirim]?.foto_pengirim || msg.foto_pengirim
+        }))
+      );
       
       setGroupDetailData(response.data);
       setShowGroupDetailModal(true);
@@ -326,10 +335,23 @@ const ChatPage = () => {
       } else if (type === 'group') {
         response = await axios.get(`http://localhost:5000/api/groups/${id}/messages`, {
           headers: { Authorization: `Bearer ${token}` },
+          params: { include_sender: true } // Pastikan API mengembalikan data pengirim
         });
       }
       
-      setMessages(response.data);
+      // Pastikan data pengirim tersedia
+      const messagesWithSender = response.data.map(message => {
+        if (type === 'group' && message.Pengirim) {
+          return {
+            ...message,
+            nama_pengirim: message.Pengirim.nama || message.Pengirim.username || 'Anggota Grup',
+            foto_pengirim: message.Pengirim.foto_profil
+          };
+        }
+        return message;
+      });
+      
+      setMessages(messagesWithSender);
       scrollToBottom();
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -758,89 +780,125 @@ const ChatPage = () => {
               </div>
             </div>
             <div className="messages">
-              {messages.map((msg) => {
+              {messages.map((msg, idx) => {
                 const userId = JSON.parse(localStorage.getItem('user'))?.id;
                 const isCurrentUser = msg.id_pengirim === userId;
-                
-                return (
-                <div
-                  key={msg.id_chat || msg.id_group_chat}
-                  className={`message ${isCurrentUser ? 'sent' : 'received'}`}
-                >
-                  {msg.media_url ? (
-                    <div className="message-media">
-                      <>
-                        {(() => {
-                          const fileName = msg.media_url.split('/').pop();
-                          const fileExt = fileName.split('.').pop().toLowerCase();
-                          const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExt);
-                          const isVideo = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(fileExt);
+                // Deteksi jika ini chat grup
+                const isGroupChat = !!selectedGroup;
+                // Cek apakah pengirim berbeda dari pesan sebelumnya (hanya untuk grup)
+                let showSenderInfo = false;
+                if (isGroupChat && !isCurrentUser) { // Hanya tampilkan info pengirim di grup chat
+                  if (idx === 0) {
+                    showSenderInfo = true;
+                  } else {
+                    const prevMsg = messages[idx - 1];
+                    showSenderInfo = prevMsg.id_pengirim !== msg.id_pengirim;
+                  }
+                  // Pastikan data pengirim tersedia
+                  if (!msg.nama_pengirim) {
+                    // Coba dapatkan dari data grup jika tersedia
+                    if (groupDetailData?.GroupMembers) {
+                      const sender = groupDetailData.GroupMembers.find(
+                        m => m.id_user === msg.id_pengirim
+                      );
+                      if (sender?.User) {
+                        msg.nama_pengirim = sender.User.nama || sender.User.username || 'Anggota Grup';
+                        msg.foto_pengirim = sender.User.foto_profil;
+                      }
+                    }
+                  }
+                }
 
-                          if (isImage) {
-                            return (
-                              <>
-                                <img
-                                  src={`http://localhost:5000${msg.media_url}`}
-                                  alt="Media terkirim"
-                                  className="message-image"
-                                  onClick={() => {
-                                    setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
-                                    setPreviewMediaType('image');
-                                    setShowMediaPreview(true);
-                                  }}
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'block';
-                                  }}
-                                />
-                                <div className="media-error">❌ Gagal memuat gambar</div>
-                              </>
-                            );
-                          } else if (isVideo) {
-                          return (
-                            <>
-                              <div className="video-container"
-                                onClick={() => {
-                                  setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
-                                  setPreviewMediaType('video');
-                                  setShowMediaPreview(true);
-                                }}
-                              >
-                                <video
-                                  src={`http://localhost:5000${msg.media_url}`}
-                                  className="message-video"
-                                  onError={(e) => {
-                                    e.target.parentElement.querySelector('.video-play-button').style.display = 'none';
-                                    e.target.parentElement.querySelector('.media-error').style.display = 'block';
-                                  }}
-                                />
-                                <div className="video-play-button">▶</div>
-                                <div className="media-error">❌ Gagal memuat video</div>
-                              </div>
-                            </>
-                          );
-                          } else {
-                            return (
-                              <a href={`http://localhost:5000${msg.media_url}`} target="_blank" rel="noopener noreferrer" className="document-file">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <span style={{ fontSize: '20px' }}>📄</span>
-                                  <div>
-                                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#333' }}>{fileName}</div>
-                                    <div style={{ fontSize: '12px', color: '#666' }}>Klik untuk membuka</div>
+                return (
+                  <div
+                    key={msg.id_chat || msg.id_group_chat}
+                    className={`message ${isCurrentUser ? 'sent' : 'received'}`}
+                  >
+                    {showSenderInfo && (
+                      <div className="message-sender-info">
+                        <img
+                          src={msg.foto_pengirim ? `http://localhost:5000${msg.foto_pengirim}` : '/default-avatar.svg'}
+                          alt={msg.nama_pengirim || 'Pengguna'}
+                          onError={(e) => { e.target.src = '/default-avatar.svg'; }}
+                        />
+                        <span>{msg.nama_pengirim || 'Anggota Grup'}</span>
+                      </div>
+                    )}
+                    {msg.media_url ? (
+                      <div className="message-media">
+                        <>
+                          {(() => {
+                            const fileName = msg.media_url.split('/').pop();
+                            const fileExt = fileName.split('.').pop().toLowerCase();
+                            const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExt);
+                            const isVideo = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(fileExt);
+
+                            if (isImage) {
+                              return (
+                                <>
+                                  <img
+                                    src={`http://localhost:5000${msg.media_url}`}
+                                    alt="Media terkirim"
+                                    className="message-image"
+                                    onClick={() => {
+                                      setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
+                                      setPreviewMediaType('image');
+                                      setShowMediaPreview(true);
+                                    }}
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      e.target.nextSibling.style.display = 'block';
+                                    }}
+                                  />
+                                  <div className="media-error">❌ Gagal memuat gambar</div>
+                                </>
+                              );
+                            } else if (isVideo) {
+                              return (
+                                <>
+                                  <div className="video-container"
+                                    onClick={() => {
+                                      setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
+                                      setPreviewMediaType('video');
+                                      setShowMediaPreview(true);
+                                    }}
+                                  >
+                                    <video
+                                      src={`http://localhost:5000${msg.media_url}`}
+                                      className="message-video"
+                                      onError={(e) => {
+                                        e.target.parentElement.querySelector('.video-play-button').style.display = 'none';
+                                        e.target.parentElement.querySelector('.media-error').style.display = 'block';
+                                      }}
+                                    />
+                                    <div className="video-play-button">▶</div>
+                                    <div className="media-error">❌ Gagal memuat video</div>
                                   </div>
-                                </div>
-                              </a>
-                            );
-                          }
-                        })()}
-                        {msg.pesan && <p className="message-caption">{msg.pesan}</p>}
-                      </>
-                    </div>
-                  ) : (
-                    <p>{msg.pesan}</p>
-                  )}
-                </div>
-              )})}
+                                </>
+                              );
+                            } else {
+                              return (
+                                <a href={`http://localhost:5000${msg.media_url}`} target="_blank" rel="noopener noreferrer" className="document-file">
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '20px' }}>📄</span>
+                                    <div>
+                                      <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#333' }}>{fileName}</div>
+                                      <div style={{ fontSize: '12px', color: '#666' }}>Klik untuk membuka</div>
+                                    </div>
+                                  </div>
+                                </a>
+                              );
+                            }
+                          })()}
+                          {msg.pesan && <p className="message-caption">{msg.pesan}</p>}
+                        </>
+                      </div>
+                    ) : (
+                      <p>{msg.pesan}</p>
+                    )}
+                  </div>
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
             {showFilePopup && (
