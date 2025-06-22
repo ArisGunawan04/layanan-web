@@ -220,17 +220,23 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    socket.current = io('http://localhost:5000');
+    const token = localStorage.getItem('token');
+    socket.current = io('http://localhost:5000', {
+      auth: {
+        token: token
+      }
+    });
 
     socket.current.on('receiveMessage', (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
     
     socket.current.on('receiveGroupMessage', (message) => {
-      // Pastikan properti 'media' dari backend dipetakan ke 'media_url' untuk pesan yang diterima via socket
       const newMessage = {
         ...message,
-        media_url: message.media 
+        media_url: message.media,
+        nama_pengirim: message.Pengirim ? (message.Pengirim.name || message.Pengirim.username) : 'Anggota Grup',
+        foto_pengirim: message.Pengirim ? message.Pengirim.foto_profil : null
       };
       setMessages((prevMessages) => [...prevMessages, newMessage]);
     });
@@ -247,6 +253,36 @@ const ChatPage = () => {
       socket.current.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    const currentUserId = JSON.parse(localStorage.getItem('user'))?.id;
+    let currentRoom = null;
+
+    if (socket.current && currentUserId) {
+      // Join user's own room for private messages
+      socket.current.emit('joinRoom', `user_${currentUserId}`);
+      console.log(`Joined room: user_${currentUserId}`);
+
+      // Join room for selected user or group
+      if (selectedUser) {
+        currentRoom = `user_${selectedUser.user_id}`;
+        socket.current.emit('joinRoom', currentRoom);
+        console.log(`Joined room: ${currentRoom}`);
+      } else if (selectedGroup) {
+        currentRoom = `group_${selectedGroup.id_grup}`;
+        socket.current.emit('joinRoom', currentRoom);
+        console.log(`Joined room: ${currentRoom}`);
+      }
+    }
+
+    return () => {
+      // Leave previous room when selected chat changes
+      if (socket.current && currentRoom) {
+        socket.current.emit('leaveRoom', currentRoom);
+        console.log(`Left room: ${currentRoom}`);
+      }
+    };
+  }, [selectedUser, selectedGroup]);
   
   const fetchGroups = useCallback(async () => {
     try {
@@ -349,7 +385,7 @@ const ChatPage = () => {
         if (type === 'group' && message.Pengirim) {
           return {
             ...message,
-            nama_pengirim: message.Pengirim.nama || message.Pengirim.username || 'Anggota Grup',
+            nama_pengirim: message.Pengirim.name || message.Pengirim.username || 'Anggota Grup',
             foto_pengirim: message.Pengirim.foto_profil,
             media_url: message.media // Pastikan properti 'media' dari backend dipetakan ke 'media_url'
           };
@@ -533,6 +569,7 @@ const ChatPage = () => {
         setPreviewUrl('');
         setSelectedFile(null);
       }
+      // Scroll ke bawah setelah pesan ditambahkan
       scrollToBottom();
     } catch (error) {
       console.error('Error sending message:', error);
@@ -808,7 +845,7 @@ const ChatPage = () => {
                         m => m.id_user === msg.id_pengirim
                       );
                       if (sender?.User) {
-                        msg.nama_pengirim = sender.User.nama || sender.User.username || 'Anggota Grup';
+                        msg.nama_pengirim = sender.User.name || sender.User.username || 'Anggota Grup';
                         msg.foto_pengirim = sender.User.foto_profil;
                       }
                     }
