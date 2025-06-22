@@ -558,6 +558,7 @@ const ChatPage = () => {
       });
       
       if (activeTab === 'pesan' && response.data.chat) {
+        // Hanya kirim pesan melalui socket, biarkan socket yang menangani update state
         socket.current.emit('sendMessage', response.data.chat);
       } else if (activeTab === 'grup' && response.data.chat) {
         socket.current.emit('sendGroupMessage', response.data.chat);
