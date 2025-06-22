@@ -849,3 +849,42 @@ main {
   text-align: center;
   margin-top: 5px;
 }
+
+.send-button {
+  background-color: #2A8BF2;
+  width: 43px;
+  height: 43px;
+  min-width: 43px;
+  min-height: 43px;
+  border: none;
+  border-radius: 50% !important; /* Mengubah border-radius menjadi 50% untuk bentuk bulat sempurna dan memastikan tidak ditimpa */
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Memastikan konten yang meluap dipotong */
+  box-sizing: border-box;
+  flex-shrink: 0;
+  position: relative; /* Menambahkan posisi relatif untuk penempatan SVG yang benar */
+  border: none !important; /* Memastikan tidak ada border yang memengaruhi bentuk */
+  outline: none !important; /* Memastikan tidak ada outline yang memengaruhi bentuk */
+}
+
+.send-button:hover {
+  background-color: #1a7bd9;
+}
+
+.send-button svg {
+  display: block;
+  width: 20px; /* Mengurangi ukuran SVG */
+  height: 20px; /* Mengurangi ukuran SVG */
+  flex-shrink: 0; /* Memastikan SVG tidak menyusut */
+  padding: 0; /* Menghilangkan padding pada SVG */
+  margin: 0; /* Menghilangkan margin pada SVG */
+  position: absolute; /* Memposisikan secara absolut */
+  top: 50%; /* Memusatkan secara vertikal */
+  left: 50%; /* Memusatkan secara horizontal */
+  transform: translate(-50%, -50%); /* Menyesuaikan posisi untuk pemusatan sempurna */
+}
