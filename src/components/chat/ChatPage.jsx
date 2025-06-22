@@ -837,62 +837,69 @@ const ChatPage = () => {
                       const isVideo = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(fileExt);
                       
                       return (
-                        <div className="message-media">
-                          {isImage ? (
-                            <>
-                              <img
-                                src={`http://localhost:5000${msg.media_url.startsWith('/') ? '' : '/'}${msg.media_url}`}
-                                alt="Media terkirim"
-                                className="message-image"
-                                onClick={() => {
-                                  setPreviewMediaUrl(`http://localhost:5000${msg.media_url.startsWith('/') ? '' : '/'}${msg.media_url}`);
-                                  setPreviewMediaType('image');
-                                  setShowMediaPreview(true);
-                                }}
-                                onError={(e) => {
-                                  // Untuk debugging, tampilkan error di konsol
-                                  console.error('Gagal memuat gambar:', e.target.src);
-                                  e.target.style.display = 'none'; // Sembunyikan gambar yang gagal
-                                  e.target.nextElementSibling.style.display = 'block'; // Tampilkan pesan error
-                                }}
-                              />
-                              <div className="media-error" style={{ display: 'none' }}>❌ Gagal memuat gambar</div>
-                            </>
-                          ) : isVideo ? (
-                            <>
-                              <div className="video-container"
-                                onClick={() => {
-                                  setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
-                                  setPreviewMediaType('video');
-                                  setShowMediaPreview(true);
-                                }}
-                              >
-                                <video
+                        <div className="message-with-media">
+                          <div className="message-media">
+                            {isImage ? (
+                              <>
+                                <img
                                   src={`http://localhost:5000${msg.media_url.startsWith('/') ? '' : '/'}${msg.media_url}`}
-                                  className="message-video"
+                                  alt="Media terkirim"
+                                  className="message-image"
+                                  onClick={() => {
+                                    setPreviewMediaUrl(`http://localhost:5000${msg.media_url.startsWith('/') ? '' : '/'}${msg.media_url}`);
+                                    setPreviewMediaType('image');
+                                    setShowMediaPreview(true);
+                                  }}
                                   onError={(e) => {
                                     // Untuk debugging, tampilkan error di konsol
-                                    console.error('Gagal memuat video:', e.target.src);
-                                    e.target.parentElement.querySelector('.video-play-button').style.display = 'none';
-                                    e.target.parentElement.querySelector('.media-error').style.display = 'block';
+                                    console.error('Gagal memuat gambar:', e.target.src);
+                                    e.target.style.display = 'none'; // Sembunyikan gambar yang gagal
+                                    e.target.nextElementSibling.style.display = 'block'; // Tampilkan pesan error
                                   }}
                                 />
-                                <div className="video-play-button">▶</div>
-                                <div className="media-error" style={{ display: 'none' }}>❌ Gagal memuat video</div>
-                              </div>
-                            </>
-                          ) : (
-                            <a href={`http://localhost:5000${msg.media_url.startsWith('/') ? '' : '/'}${msg.media_url}`} target="_blank" rel="noopener noreferrer" className="document-file">
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '20px' }}>📄</span>
-                                <div>
-                                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#333' }}>
-                                    {msg.pesan ? `File: ${msg.pesan}` : `File: ${fileName.replace(/^\d+-|^group_media-\d+-/g, '')}`}
-                                  </div>
-                                  <div style={{ fontSize: '12px', color: '#666' }}>Klik untuk membuka</div>
+                                <div className="media-error" style={{ display: 'none' }}>❌ Gagal memuat gambar</div>
+                              </>
+                            ) : isVideo ? (
+                              <>
+                                <div className="video-container"
+                                  onClick={() => {
+                                    setPreviewMediaUrl(`http://localhost:5000${msg.media_url}`);
+                                    setPreviewMediaType('video');
+                                    setShowMediaPreview(true);
+                                  }}
+                                >
+                                  <video
+                                    src={`http://localhost:5000${msg.media_url.startsWith('/') ? '' : '/'}${msg.media_url}`}
+                                    className="message-video"
+                                    onError={(e) => {
+                                      // Untuk debugging, tampilkan error di konsol
+                                      console.error('Gagal memuat video:', e.target.src);
+                                      e.target.parentElement.querySelector('.video-play-button').style.display = 'none';
+                                      e.target.parentElement.querySelector('.media-error').style.display = 'block';
+                                    }}
+                                  />
+                                  <div className="video-play-button">▶</div>
+                                  <div className="media-error" style={{ display: 'none' }}>❌ Gagal memuat video</div>
                                 </div>
-                              </div>
-                            </a>
+                              </>
+                            ) : (
+                              <a href={`http://localhost:5000${msg.media_url.startsWith('/') ? '' : '/'}${msg.media_url}`} target="_blank" rel="noopener noreferrer" className="document-file">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ fontSize: '20px' }}>📄</span>
+                                  <div>
+                                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#333' }}>
+                                      {msg.pesan ? `File: ${msg.pesan}` : `File: ${fileName.replace(/^\d+-|^group_media-\d+-/g, '')}`}
+                                    </div>
+                                    <div style={{ fontSize: '12px', color: '#666' }}>Klik untuk membuka</div>
+                                  </div>
+                                </div>
+                              </a>
+                            )}
+                          </div>
+                          {msg.pesan && msg.pesan.trim() && !msg.pesan.startsWith('File:') && (
+                            <div className="message-caption">
+                              <p>{msg.pesan}</p>
+                            </div>
                           )}
                         </div>
                       );
@@ -950,6 +957,9 @@ const ChatPage = () => {
                     </div>
                   )}
                 </div>
+                <div className="caption-hint">
+                  <small>💬 Tambahkan caption di kolom pesan di bawah</small>
+                </div>
               </div>
             )}
 
@@ -975,7 +985,7 @@ const ChatPage = () => {
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Ketik pesan di sini..."
+                placeholder={selectedFile ? "Tambahkan caption (opsional)..." : "Ketik pesan di sini..."}
               />
               <button type="submit" className="send-button" style={{ borderRadius: '50%', border: 'none', outline: 'none' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

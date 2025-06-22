@@ -215,7 +215,7 @@
 }
 
 .message.sent > p,
-.message.sent .message-media {
+.message.sent .message-with-media {
   background-color: #00FA04; /* Warna hijau terang */
   color: white;
   padding: 10px 15px;
@@ -227,7 +227,7 @@
 }
 
 .message.received > p,
-.message.received .message-media {
+.message.received .message-with-media {
   background-color: #2A8BF2; /* Warna biru baru */
   color: white; /* Teks putih untuk kontras */
   padding: 10px 15px;
@@ -235,6 +235,11 @@
   max-width: 100%;
   display: inline-block;
   margin-left: 45px; /* Sesuaikan dengan margin-left message-sender-info */
+}
+
+.message-media {
+  padding: 0;
+  background-color: transparent;
 }
 
 /* Style untuk pesan dengan media (gambar/video) dan teks */
@@ -761,6 +766,105 @@ main {
 
 .file-preview-remove-btn:hover {
   background-color: #e74c3c;
+}
+
+.caption-hint {
+  margin-left: 15px;
+  padding: 8px 12px;
+  background-color: #e3f2fd;
+  border-radius: 15px;
+  border-left: 3px solid #2196f3;
+}
+
+.caption-hint small {
+  color: #1976d2;
+  font-weight: 500;
+  font-size: 0.85em;
+}
+
+/* Styling untuk pesan dengan media dan caption */
+.message-with-media {
+  display: flex;
+  flex-direction: column;
+  max-width: 250px;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.message-caption {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.message-caption p {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Styling untuk pesan terkirim */
+.message.sent .message-with-media {
+  background-color: #00FA04;
+  border-radius: 15px;
+  overflow: hidden;
+  padding-bottom: 5px;
+}
+
+.message.sent .message-caption {
+  text-align: right;
+  background-color: #00FA04;
+  padding: 5px 12px 8px 12px;
+  margin: 0;
+}
+
+/* Styling untuk pesan diterima */
+.message.received .message-with-media {
+  background-color: #2A8BF2;
+  border-radius: 15px;
+  overflow: hidden;
+  padding-bottom: 5px;
+}
+
+.message.received .message-caption {
+  text-align: left;
+  background-color: #2A8BF2;
+  padding: 5px 12px 8px 12px;
+  margin: 0;
+}
+
+/* Style untuk media dan gambar */
+.message-media {
+  width: 100%;
+  display: block;
+}
+
+.message-image {
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Style untuk teks caption */
+.message.sent .message-caption p,
+.message.received .message-caption p {
+  color: #fff;
+  display: block;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  line-height: 1.5;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  margin-left: -10px; /* Menggeser teks lebih ke kiri */
 }
 
 /* Media Preview Modal Styles */
