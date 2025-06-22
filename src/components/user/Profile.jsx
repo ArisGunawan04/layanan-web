@@ -435,9 +435,8 @@ const Profile = () => {
                 }}
                 style={{ opacity: imageLoading ? 0.5 : 1, transition: 'opacity 0.3s ease' }}
               />
-              {isOwnProfile && (
+              {false && (
                 <EditAvatarButton>
-                  <FaCamera size={16} />
                 </EditAvatarButton>
               )}
             </AvatarContainer>
