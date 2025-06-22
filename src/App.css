@@ -692,3 +692,160 @@ main {
   background: rgba(0,0,0,0.1);
   border-radius: 4px;
 }
+
+/* Styles for file preview before sending */
+.file-preview-container {
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.file-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.file-preview-image {
+  max-width: 100px; /* Ukuran maksimum untuk pratinjau gambar */
+  max-height: 100px;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  object-fit: contain;
+  margin-right: 10px;
+}
+
+.file-preview-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.file-preview-info span {
+  font-weight: bold;
+  color: #333;
+}
+
+.file-preview-info small {
+  color: #666;
+  font-size: 0.8em;
+}
+
+.file-preview-remove-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.2s;
+}
+
+.file-preview-remove-btn:hover {
+  background-color: #e74c3c;
+}
+
+/* Media Preview Modal Styles */
+.media-preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9); /* Lebih gelap untuk fokus pada media */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001; /* Pastikan di atas semua elemen lain */
+}
+
+.media-preview-content {
+  position: relative;
+  background: transparent; /* Tidak ada latar belakang untuk konten */
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  max-width: 90%; /* Batasi lebar maksimum */
+  max-height: 90%; /* Batasi tinggi maksimum */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.media-preview-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.3); /* Tombol close transparan */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1002; /* Di atas media */
+  transition: background-color 0.2s;
+}
+
+.media-preview-close:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.media-preview-item {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Pastikan media terlihat penuh tanpa terpotong */
+  border-radius: 8px; /* Sudut sedikit membulat */
+}
+
+.video-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.video-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  pointer-events: none; /* Agar klik bisa tembus ke video */
+}
+
+.media-error {
+  color: red;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 5px;
+}
