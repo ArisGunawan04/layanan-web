@@ -439,59 +439,6 @@ const StoryCard = styled.div`
   }
 `;
 
-// Mobile Navigation Bar
-const MobileNavBar = styled.div`
-  display: none;
-  
-  @media (max-width: 768px) {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    background: #fff;
-    border-top: 1px solid #e4e6eb;
-    padding: 12px 20px 25px 20px;
-    z-index: 9999;
-    justify-content: space-around;
-    align-items: center;
-    height: 80px;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const NavItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #8e8e93;
-  font-size: 10px;
-  cursor: pointer;
-  min-width: 50px;
-  gap: 4px;
-  
-  svg {
-    width: 22px;
-    height: 22px;
-  }
-  
-  span {
-    font-weight: 400;
-    margin-top: 2px;
-    text-align: center;
-  }
-  
-  &.add-button {
-    position: relative;
-    top: -15px;
-    
-    span {
-      display: none;
-    }
-  }
-`;
 
 // Mobile Header
 const MobileHeader = styled.div`
@@ -1048,14 +995,14 @@ const Beranda = () => {
       <MobileContentContainer>
       
       {/* Create Story Modal */}
-      <CreateStory 
+      <CreateStory
         isOpen={showCreateStory}
         onClose={() => setShowCreateStory(false)}
         onStoryCreated={fetchStories}
       />
       
       {/* Story Viewer */}
-      <StoryViewer 
+      <StoryViewer
         isOpen={showStoryViewer}
         onClose={() => setShowStoryViewer(false)}
         stories={stories}
@@ -1108,8 +1055,8 @@ const Beranda = () => {
           
           {/* User Stories */}
           {stories.map((userStory, userIndex) => (
-            <StoryCard 
-              key={userStory.user.user_id} 
+            <StoryCard
+              key={userStory.user.user_id}
               onClick={() => {
                 setSelectedUserIndex(userIndex);
                 setSelectedStoryIndex(0);
@@ -1117,11 +1064,11 @@ const Beranda = () => {
               }}
               style={{ cursor: 'pointer' }}
             >
-              <StoryImage 
-                src={userStory.stories[0]?.media ? 
-                  `http://localhost:5000${userStory.stories[0].media}` : 
+              <StoryImage
+                src={userStory.stories[0]?.media ?
+                  `http://localhost:5000${userStory.stories[0].media}` :
                   "/default-avatar.svg"
-                } 
+                }
                 alt={userStory.user.name}
                 onError={(e) => {
                   e.target.src = '/default-avatar.svg';
@@ -1135,15 +1082,15 @@ const Beranda = () => {
         <CreatePostCard>
           <CreatePostForm>
             <PostInputRow>
-              <ProfilePic 
+              <ProfilePic
                  src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"}
                  alt="Profile"
                  onError={(e) => {
                    e.target.src = '/default-avatar.svg';
                  }}
                />
-              <PostInput 
-                placeholder="Apa yang sedang Anda pikirkan?" 
+              <PostInput
+                placeholder="Apa yang sedang Anda pikirkan?"
                 value={newPostText}
                 onChange={(e) => setNewPostText(e.target.value)}
                 rows={1}
@@ -1164,14 +1111,14 @@ const Beranda = () => {
             <CreatePostActions>
                <MediaButton>
                  📷 Foto/Video
-                 <MediaUpload 
-                   type="file" 
-                   accept="image/*,video/*" 
+                 <MediaUpload
+                   type="file"
+                   accept="image/*,video/*"
                    onChange={handleMediaSelect}
                  />
                </MediaButton>
                
-               <SubmitButton 
+               <SubmitButton
                  onClick={handleCreatePost}
                  disabled={(!newPostText.trim() && !selectedMedia) || isPosting}
                >
@@ -1390,7 +1337,7 @@ const Beranda = () => {
               
               {/* Kolom Kanan - Komentar */}
               <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
-                <ModalBody 
+                <ModalBody
                   onScroll={(e) => {
                     const { scrollTop, scrollHeight, clientHeight } = e.target;
                     if (scrollHeight - scrollTop === clientHeight && hasMoreComments && !loadingMoreComments) {
@@ -1498,51 +1445,6 @@ const Beranda = () => {
       )}
       </MobileContentContainer>
       
-      {/* Mobile Navigation Bar */}
-      <MobileNavBar>
-        <NavItem>
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-          </svg>
-          <span>Beranda</span>
-        </NavItem>
-        <NavItem>
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-          <span>Menu</span>
-        </NavItem>
-        <NavItem className="add-button">
-          <div style={{
-            backgroundColor: '#00D4AA',
-            borderRadius: '50%',
-            width: '56px',
-            height: '56px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: '-20px',
-            boxShadow: '0 4px 12px rgba(0, 212, 170, 0.3)',
-            border: '3px solid #fff'
-          }}>
-            <svg viewBox="0 0 24 24" fill="white" style={{width: '24px', height: '24px'}}>
-              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-            </svg>
-          </div>
-        </NavItem>
-        <NavItem>
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-          </svg>
-          <span>Notifikasi</span>
-        </NavItem>
-        <NavItem>
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
-          <span>Profil</span>
-        </NavItem>
-      </MobileNavBar>
     </div>
   );
 };

@@ -14,6 +14,10 @@ const SidebarContainer = styled.div`
   position: fixed;
   left: 0;
   top: 0;
+
+  @media (max-width: 768px) {
+    display: none; /* Hide sidebar on mobile */
+  }
 `;
 
 const Logo = styled.div`
