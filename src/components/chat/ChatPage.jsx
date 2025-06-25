@@ -608,7 +608,7 @@ const ChatPage = () => {
    
   return (
     <div className="chat-container">
-      <div className="sidebar-chat">
+      <div className={`sidebar-chat ${(selectedUser || selectedGroup) ? 'hidden-mobile' : ''}`}>
         <div className="chat-tabs">
           <div 
             className={`tab-item ${activeTab === 'permintaan' ? 'active' : ''}`}
@@ -740,10 +740,20 @@ const ChatPage = () => {
           </>
         )}
       </div>
-      <div className="chat-area">
+      <div className={`chat-area ${(selectedUser || selectedGroup) ? 'full-width-mobile' : ''}`}>
         {(selectedUser || selectedGroup) ? (
           <>
             <div className="chat-header">
+              <button 
+                className="back-button mobile-only"
+                onClick={() => {
+                  setSelectedUser(null);
+                  setSelectedGroup(null);
+                  setMessages([]);
+                }}
+              >
+                ←
+              </button>
               <img 
                   src={selectedUser ? (selectedUser.foto_profil ? `http://localhost:5000${selectedUser.foto_profil.startsWith('/') ? '' : '/'}${selectedUser.foto_profil}` : '/default-avatar.svg') : (selectedGroup.foto_grup ? `http://localhost:5000${selectedGroup.foto_grup.startsWith('/') ? '' : '/'}${selectedGroup.foto_grup}` : '/default-avatar.svg')} 
                   alt={selectedUser ? selectedUser.username : selectedGroup.nama_grup} 
