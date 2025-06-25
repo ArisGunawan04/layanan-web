@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaUser, FaCamera, FaSave, FaTimes } from 'react-icons/fa';
+import { FaUser, FaCamera, FaSave, FaTimes, FaShieldAlt } from 'react-icons/fa';
 import axios from 'axios';
 
 const Container = styled.div`
@@ -32,53 +32,84 @@ const MainContent = styled.div`
 
 const SettingsSidebar = styled.div`
   width: 200px;
-  background: #f8f9fa;
-  padding: 20px 0 20px 20px;
+  background: white;
+  padding: 20px 0;
   min-height: calc(100vh - 40px);
   overflow-y: auto;
   position: sticky;
   top: 0;
+  border-right: 1px solid #e0e0e0;
   
   @media (max-width: 768px) {
     width: 100%;
     padding: 15px;
     min-height: auto;
     position: relative;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
   }
 `;
 
 const SidebarTitle = styled.h3`
-  margin: 0 0 20px 0;
+  margin: 0 0 20px 20px;
   color: #333;
   font-size: 16px;
   font-weight: 600;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const MenuList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    gap: 20px;
+  }
 `;
 
 const MenuItem = styled.li`
   margin-bottom: 10px;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 0;
+  }
 `;
 
 const MenuLink = styled.button`
   width: 100%;
   text-align: left;
-  background: ${props => props.$active ? '#2A8BF2' : 'transparent'};
+  background: ${props => props.$active ? '#007bff' : 'transparent'};
   color: ${props => props.$active ? 'white' : '#666'};
   border: none;
-  padding: 12px 16px;
-  border-radius: 6px;
+  padding: 12px 20px;
+  border-radius: 25px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 20px;
   
   &:hover {
-    background: ${props => props.$active ? '#1a7bd9' : '#e9ecef'};
+    background: ${props => props.$active ? '#0056b3' : '#f8f9fa'};
     color: ${props => props.$active ? 'white' : '#333'};
+  }
+  
+  @media (max-width: 768px) {
+    margin: 0;
+    padding: 10px 20px;
+    border-radius: 20px;
+    justify-content: center;
+    min-width: 120px;
   }
 `;
 
@@ -91,6 +122,18 @@ const ProfileSection = styled.div`
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   background: #fafafa;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 20px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 12px;
+    gap: 15px;
+  }
 `;
 
 const LeftSection = styled.div`
@@ -98,11 +141,21 @@ const LeftSection = styled.div`
   flex-direction: column;
   align-items: center;
   min-width: 200px;
+  
+  @media (max-width: 768px) {
+    min-width: 100%;
+    align-items: center;
+  }
 `;
 
 const FormSection = styled.div`
   flex: 1;
   max-width: 500px;
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+    width: 100%;
+  }
 `;
 
 const Header = styled.div`
@@ -112,6 +165,17 @@ const Header = styled.div`
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 2px solid #2A8BF2;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
 `;
 
 const Title = styled.h2`
@@ -122,6 +186,15 @@ const Title = styled.h2`
   gap: 10px;
   font-size: 24px;
   font-weight: 600;
+  
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 18px;
+    justify-content: center;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -137,6 +210,19 @@ const CloseButton = styled.button`
   &:hover {
     background: #f8f9fa;
     color: #333;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 18px;
+    padding: 10px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 16px;
+    padding: 12px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
   }
 `;
 
@@ -158,6 +244,16 @@ const Avatar = styled.img`
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #2A8BF2;
+  
+  @media (max-width: 768px) {
+    width: 100px;
+    height: 100px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 80px;
+    height: 80px;
+  }
 `;
 
 const AvatarUpload = styled.label`
@@ -179,6 +275,18 @@ const AvatarUpload = styled.label`
   &:hover {
     background: #0056b3;
   }
+  
+  @media (max-width: 768px) {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 25px;
+    height: 25px;
+    font-size: 10px;
+  }
 `;
 
 const UploadText = styled.p`
@@ -187,6 +295,16 @@ const UploadText = styled.p`
   color: #007bff;
   text-align: center;
   font-weight: 500;
+  
+  @media (max-width: 768px) {
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+    margin-top: 6px;
+  }
 `;
 
 const HiddenInput = styled.input`
@@ -197,11 +315,27 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  
+  @media (max-width: 768px) {
+    gap: 18px;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 16px;
+  }
 `;
 
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 5px;
+  }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 8px;
+  }
 `;
 
 const Label = styled.label`
@@ -209,6 +343,17 @@ const Label = styled.label`
   margin-bottom: 6px;
   color: #555;
   font-size: 14px;
+  
+  @media (max-width: 768px) {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 16px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
 `;
 
 const Input = styled.input`
@@ -218,11 +363,24 @@ const Input = styled.input`
   font-size: 14px;
   transition: border-color 0.2s ease;
   background: white;
+  width: 100%;
+  box-sizing: border-box;
   
   &:focus {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 16px;
+    font-size: 16px;
+    border-radius: 8px;
   }
 `;
 
@@ -236,11 +394,26 @@ const TextArea = styled.textarea`
   font-family: inherit;
   transition: border-color 0.2s ease;
   background: white;
+  width: 100%;
+  box-sizing: border-box;
   
   &:focus {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 14px 16px;
+    font-size: 16px;
+    min-height: 100px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 16px;
+    font-size: 16px;
+    border-radius: 8px;
+    min-height: 120px;
   }
 `;
 
@@ -249,6 +422,16 @@ const ButtonGroup = styled.div`
   gap: 15px;
   justify-content: flex-end;
   margin-top: 25px;
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 10px;
+  }
 `;
 
 const Button = styled.button`
@@ -263,11 +446,23 @@ const Button = styled.button`
   gap: 8px;
   transition: all 0.2s ease;
   min-width: 100px;
+  
+  @media (max-width: 768px) {
+    padding: 12px 24px;
+    justify-content: center;
+  }
+  
+  @media (max-width: 480px) {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px;
+  }
 `;
 
 const SaveButton = styled(Button)`
   background: #007bff;
   color: white;
+  border-radius: 25px;
   
   &:hover {
     background: #0056b3;
@@ -282,6 +477,7 @@ const SaveButton = styled(Button)`
 const CancelButton = styled(Button)`
   background: #dc3545;
   color: white;
+  border-radius: 25px;
   
   &:hover {
     background: #c82333;
@@ -292,12 +488,38 @@ const ErrorMessage = styled.div`
   color: #dc3545;
   font-size: 14px;
   margin-top: 5px;
+  
+  @media (max-width: 768px) {
+    font-size: 15px;
+    text-align: center;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 16px;
+    padding: 10px;
+    background: #f8d7da;
+    border-radius: 6px;
+    border: 1px solid #f5c6cb;
+  }
 `;
 
 const SuccessMessage = styled.div`
   color: #28a745;
   font-size: 14px;
   margin-top: 5px;
+  
+  @media (max-width: 768px) {
+    font-size: 15px;
+    text-align: center;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 16px;
+    padding: 10px;
+    background: #d4edda;
+    border-radius: 6px;
+    border: 1px solid #c3e6cb;
+  }
 `;
 
 const EditProfile = () => {
@@ -423,11 +645,13 @@ const EditProfile = () => {
         <MenuList>
           <MenuItem>
             <MenuLink $active={true}>
-              Edit Profil
+              <FaUser /> Edit Profil
             </MenuLink>
           </MenuItem>
           <MenuItem>
-            <MenuLink onClick={() => navigate('/keamanan')}>Keamanan</MenuLink>
+            <MenuLink onClick={() => navigate('/keamanan')}>
+              <FaShieldAlt /> Keamanan
+            </MenuLink>
           </MenuItem>
         </MenuList>
       </SettingsSidebar>
