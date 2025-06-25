@@ -6,6 +6,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   box-sizing: border-box;
+  
+  /* Mobile navigation spacing */
+  @media (max-width: 768px) {
+    padding-bottom: 100px; /* Space for mobile navigation */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
 }
 
 * {

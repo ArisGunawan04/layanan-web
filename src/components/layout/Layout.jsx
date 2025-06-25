@@ -34,6 +34,17 @@ const MobileNavBar = styled.div`
     align-items: center;
     height: 80px;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    transform: translateZ(0); /* Force hardware acceleration */
+    -webkit-transform: translateZ(0); /* Safari support */
+    will-change: transform; /* Optimize for animations */
+    backface-visibility: hidden; /* Prevent flickering */
+    -webkit-backface-visibility: hidden; /* Safari support */
+    
+    /* Additional properties to ensure fixed positioning */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    contain: layout style paint; /* Optimize rendering */
+    isolation: isolate; /* Create new stacking context */
+    pointer-events: auto; /* Ensure touch events work */
   }
 `;
 
