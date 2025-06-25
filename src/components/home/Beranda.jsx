@@ -249,6 +249,13 @@ const ModalOverlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 10px;
+  
+  @media (max-width: 768px) {
+    padding: 5px;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
 `;
 
 const ModalContent = styled.div`
@@ -260,6 +267,20 @@ const ModalContent = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  
+  @media (max-width: 768px) {
+    width: 95%;
+    max-width: none;
+    max-height: 90vh;
+    border-radius: 8px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
 `;
 
 const ModalHeader = styled.div`
@@ -269,6 +290,18 @@ const ModalHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   background: #f8f9fa;
+  flex-shrink: 0;
+  
+  @media (max-width: 768px) {
+    padding: 12px 15px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
 `;
 
 const ModalTitle = styled.h3`
@@ -276,6 +309,14 @@ const ModalTitle = styled.h3`
   font-size: 18px;
   font-weight: 600;
   color: #1c1e21;
+  
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -286,9 +327,26 @@ const CloseButton = styled.button`
   color: #65676b;
   padding: 5px;
   border-radius: 50%;
+  min-width: 30px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   &:hover {
     background-color: #f0f2f5;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 18px;
+    min-width: 28px;
+    min-height: 28px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 16px;
+    min-width: 26px;
+    min-height: 26px;
   }
 `;
 
@@ -296,6 +354,14 @@ const ModalBody = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 15px 20px;
+  
+  @media (max-width: 768px) {
+    padding: 12px 15px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 12px;
+  }
 `;
 
 const ViewMoreButton = styled.button`
@@ -1200,24 +1266,56 @@ const Beranda = () => {
               </PostActions>
 
               {/* Komentar Section */}
-              <div style={{ padding: '0 15px 15px', borderTop: '1px solid #e4e6eb' }}>
+              <div style={{ 
+                padding: window.innerWidth <= 480 ? '0 10px 12px' : '0 15px 15px', 
+                borderTop: '1px solid #e4e6eb' 
+              }}>
                 {/* Daftar Komentar Preview (hanya 1 komentar) */}
                 {post.Komentars?.slice(0, 1).map((comment, index) => (
-                  <div key={index} style={{ display: 'flex', marginTop: '10px' }}>
+                  <div key={index} style={{ 
+                    display: 'flex', 
+                    marginTop: window.innerWidth <= 480 ? '8px' : '10px',
+                    padding: window.innerWidth <= 480 ? '0 5px' : '0'
+                  }}>
                     <img
                        src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "/default-avatar.svg"}
                        alt={comment.User?.name}
                        onError={(e) => {
                          e.target.src = '/default-avatar.svg';
                        }}
-                      style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
+                      style={{ 
+                        width: window.innerWidth <= 480 ? '28px' : '30px', 
+                        height: window.innerWidth <= 480 ? '28px' : '30px', 
+                        borderRadius: '50%', 
+                        marginRight: window.innerWidth <= 480 ? '8px' : '10px',
+                        flexShrink: 0
+                      }}
                     />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ background: '#f0f2f5', borderRadius: '18px', padding: '8px 12px' }}>
-                        <div style={{ fontWeight: '600', fontSize: '13px', textAlign: 'left' }}>{comment.User?.name}</div>
-                        <div style={{ fontSize: '14px', textAlign: 'left' }}>{comment.isi_komentar}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ 
+                        background: '#f0f2f5', 
+                        borderRadius: '18px', 
+                        padding: window.innerWidth <= 480 ? '6px 10px' : '8px 12px',
+                        wordBreak: 'break-word'
+                      }}>
+                        <div style={{ 
+                          fontWeight: '600', 
+                          fontSize: window.innerWidth <= 480 ? '12px' : '13px', 
+                          textAlign: 'left'
+                        }}>{comment.User?.name}</div>
+                        <div style={{ 
+                          fontSize: window.innerWidth <= 480 ? '13px' : '14px', 
+                          textAlign: 'left',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word'
+                        }}>{comment.isi_komentar}</div>
                       </div>
-                      <div style={{ fontSize: '12px', color: '#65676b', marginTop: '4px', marginLeft: '12px' }}>
+                      <div style={{ 
+                        fontSize: window.innerWidth <= 480 ? '11px' : '12px', 
+                        color: '#65676b', 
+                        marginTop: '4px', 
+                        marginLeft: window.innerWidth <= 480 ? '10px' : '12px'
+                      }}>
                         {formatTime(comment.waktu)}
                       </div>
                     </div>
@@ -1227,16 +1325,27 @@ const Beranda = () => {
 
 
                 {/* Input Komentar Baru */}
-                <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  marginTop: window.innerWidth <= 480 ? '8px' : '10px',
+                  gap: window.innerWidth <= 480 ? '6px' : '8px',
+                  padding: window.innerWidth <= 480 ? '0 5px' : '0'
+                }}>
                   <img
                     src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"}
                     alt="Profile"
                     onError={(e) => {
                       e.target.src = '/default-avatar.svg';
                     }}
-                    style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }}
+                    style={{ 
+                      width: window.innerWidth <= 480 ? '28px' : '30px', 
+                      height: window.innerWidth <= 480 ? '28px' : '30px', 
+                      borderRadius: '50%',
+                      flexShrink: 0
+                    }}
                   />
-                  <div style={{ flex: 1, position: 'relative' }}>
+                  <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
                     <input
                       type="text"
                       placeholder="Tulis komentar..."
@@ -1246,9 +1355,10 @@ const Beranda = () => {
                         width: '100%',
                         border: '1px solid #e4e6eb',
                         borderRadius: '20px',
-                        padding: '8px 12px',
-                        fontSize: '14px',
-                        outline: 'none'
+                        padding: window.innerWidth <= 480 ? '6px 10px' : '8px 12px',
+                        fontSize: window.innerWidth <= 480 ? '13px' : '14px',
+                        outline: 'none',
+                        boxSizing: 'border-box'
                       }}
                     />
                   </div>
@@ -1261,8 +1371,10 @@ const Beranda = () => {
                       color: '#4a6cf7',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      marginLeft: '10px',
-                      opacity: newCommentInput[post.id_post]?.trim() ? 1 : 0.5
+                      opacity: newCommentInput[post.id_post]?.trim() ? 1 : 0.5,
+                      fontSize: window.innerWidth <= 480 ? '12px' : '14px',
+                      padding: window.innerWidth <= 480 ? '4px 6px' : '5px 8px',
+                      flexShrink: 0
                     }}
                   >
                     Kirim
@@ -1286,9 +1398,16 @@ const Beranda = () => {
             </ModalHeader>
             
             {/* Layout Dua Kolom */}
-            <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+            <div style={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: window.innerWidth <= 768 ? 'column' : 'row' }}>
               {/* Kolom Kiri - Postingan */}
-              <div style={{ flex: '1', borderRight: '1px solid #e4e6eb', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ 
+                flex: window.innerWidth <= 768 ? 'none' : '1', 
+                borderRight: window.innerWidth <= 768 ? 'none' : '1px solid #e4e6eb',
+                borderBottom: window.innerWidth <= 768 ? '1px solid #e4e6eb' : 'none',
+                display: 'flex', 
+                flexDirection: 'column',
+                maxHeight: window.innerWidth <= 768 ? '40vh' : 'none'
+              }}>
                 {(() => {
                   const selectedPost = posts.find(post => post.id_post === selectedPostId);
                   if (!selectedPost) return <div>Postingan tidak ditemukan</div>;
@@ -1350,7 +1469,12 @@ const Beranda = () => {
               </div>
               
               {/* Kolom Kanan - Komentar */}
-              <div style={{ flex: '1', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ 
+                flex: '1', 
+                display: 'flex', 
+                flexDirection: 'column',
+                minHeight: window.innerWidth <= 768 ? '300px' : 'auto'
+              }}>
                 <ModalBody
                   onScroll={(e) => {
                     const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -1366,25 +1490,56 @@ const Beranda = () => {
                 <>
                   {/* Daftar Semua Komentar */}
                   {allComments.map((comment, index) => (
-                    <div key={index} style={{ display: 'flex', marginBottom: '15px' }}>
+                    <div key={index} style={{ 
+                      display: 'flex', 
+                      marginBottom: window.innerWidth <= 480 ? '12px' : '15px',
+                      padding: window.innerWidth <= 480 ? '0 5px' : '0'
+                    }}>
                       <img
                         src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "/default-avatar.svg"}
                         alt={comment.User?.name}
                         onError={(e) => {
                           e.target.src = '/default-avatar.svg';
                         }}
-                        style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '12px' }}
+                        style={{ 
+                          width: window.innerWidth <= 480 ? '32px' : '40px', 
+                          height: window.innerWidth <= 480 ? '32px' : '40px', 
+                          borderRadius: '50%', 
+                          marginRight: window.innerWidth <= 480 ? '8px' : '12px',
+                          flexShrink: 0
+                        }}
                       />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ background: '#f0f2f5', borderRadius: '18px', padding: '10px 15px' }}>
-                          <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '2px', textAlign: 'left' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ 
+                          background: '#f0f2f5', 
+                          borderRadius: '18px', 
+                          padding: window.innerWidth <= 480 ? '8px 12px' : '10px 15px',
+                          wordBreak: 'break-word'
+                        }}>
+                          <div style={{ 
+                            fontWeight: '600', 
+                            fontSize: window.innerWidth <= 480 ? '13px' : '14px', 
+                            marginBottom: '2px', 
+                            textAlign: 'left'
+                          }}>
                             {comment.User?.name}
                           </div>
-                          <div style={{ fontSize: '14px', lineHeight: '1.4', textAlign: 'left' }}>
+                          <div style={{ 
+                            fontSize: window.innerWidth <= 480 ? '13px' : '14px', 
+                            lineHeight: '1.4', 
+                            textAlign: 'left',
+                            wordWrap: 'break-word',
+                            overflowWrap: 'break-word'
+                          }}>
                             {comment.isi_komentar}
                           </div>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#65676b', marginTop: '5px', marginLeft: '15px' }}>
+                        <div style={{ 
+                          fontSize: window.innerWidth <= 480 ? '11px' : '12px', 
+                          color: '#65676b', 
+                          marginTop: '5px', 
+                          marginLeft: window.innerWidth <= 480 ? '12px' : '15px'
+                        }}>
                           {formatTime(comment.waktu)}
                         </div>
                       </div>
@@ -1408,17 +1563,27 @@ const Beranda = () => {
             </ModalBody>
             
             {/* Input Komentar di Modal */}
-            <div style={{ padding: '15px 20px', borderTop: '1px solid #e4e6eb' }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ 
+              padding: window.innerWidth <= 480 ? '10px 12px' : '15px 20px', 
+              borderTop: '1px solid #e4e6eb',
+              flexShrink: 0,
+              background: 'white'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: window.innerWidth <= 480 ? '8px' : '10px' }}>
                 <img
                   src={user?.foto_profil ? `http://localhost:5000${user.foto_profil}` : "/default-avatar.svg"}
                   alt="Profile"
                   onError={(e) => {
                     e.target.src = '/default-avatar.svg';
                   }}
-                  style={{ width: '35px', height: '35px', borderRadius: '50%', marginRight: '10px' }}
+                  style={{ 
+                    width: window.innerWidth <= 480 ? '30px' : '35px', 
+                    height: window.innerWidth <= 480 ? '30px' : '35px', 
+                    borderRadius: '50%',
+                    flexShrink: 0
+                  }}
                 />
-                <div style={{ flex: 1, position: 'relative' }}>
+                <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
                   <input
                     type="text"
                     placeholder="Tulis komentar..."
@@ -1429,9 +1594,10 @@ const Beranda = () => {
                       width: '100%',
                       border: '1px solid #e4e6eb',
                       borderRadius: '20px',
-                      padding: '10px 15px',
-                      fontSize: '14px',
-                      outline: 'none'
+                      padding: window.innerWidth <= 480 ? '8px 12px' : '10px 15px',
+                      fontSize: window.innerWidth <= 480 ? '13px' : '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
                     }}
                   />
                 </div>
@@ -1444,8 +1610,10 @@ const Beranda = () => {
                     color: '#4a6cf7',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    marginLeft: '10px',
-                    opacity: modalCommentInput.trim() ? 1 : 0.5
+                    opacity: modalCommentInput.trim() ? 1 : 0.5,
+                    fontSize: window.innerWidth <= 480 ? '13px' : '14px',
+                    padding: window.innerWidth <= 480 ? '5px 8px' : '5px 10px',
+                    flexShrink: 0
                   }}
                 >
                   Kirim
