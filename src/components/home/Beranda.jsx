@@ -455,15 +455,26 @@ const MobileHeader = styled.div`
     padding: 12px 16px;
     z-index: 100;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     height: 56px;
   }
 `;
 
+const MobileLogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const MobileLogoImage = styled.img`
+  width: 28px;
+  height: 28px;
+`;
+
 const AppLogo = styled.h1`
-  color: #1877f2;
-  font-size: 24px;
-  font-weight: bold;
+  color: #4a6cf7;
+  font-size: 20px;
+  font-weight: 700;
   margin: 0;
 `;
 
@@ -988,7 +999,10 @@ const Beranda = () => {
     <div>
       {/* Mobile Header */}
       <MobileHeader>
-        <AppLogo>ConnectHub</AppLogo>
+        <MobileLogoContainer>
+          <MobileLogoImage src="/src/assets/Logo.png" alt="ConnectHub Logo" onError={(e) => { e.target.style.display = 'none'; }} />
+          <AppLogo>ConnectHub</AppLogo>
+        </MobileLogoContainer>
       </MobileHeader>
       
       {/* Mobile Content Container */}
@@ -1187,8 +1201,8 @@ const Beranda = () => {
 
               {/* Komentar Section */}
               <div style={{ padding: '0 15px 15px', borderTop: '1px solid #e4e6eb' }}>
-                {/* Daftar Komentar Preview (hanya 2 komentar) */}
-                {post.Komentars?.slice(0, 2).map((comment, index) => (
+                {/* Daftar Komentar Preview (hanya 1 komentar) */}
+                {post.Komentars?.slice(0, 1).map((comment, index) => (
                   <div key={index} style={{ display: 'flex', marginTop: '10px' }}>
                     <img
                        src={comment.User?.foto_profil ? `http://localhost:5000${comment.User.foto_profil}` : "/default-avatar.svg"}
