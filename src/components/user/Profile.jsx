@@ -9,13 +9,51 @@ const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 30px;
+  
+  @media (max-width: 1024px) {
+    max-width: 100%;
+    padding: 15px;
+  }
   
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    padding: 0;
+    margin: 0;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0;
+  }
+`;
+
+const MobileProfileCard = styled.div`
+  @media (max-width: 480px) {
+    background: #f5f5f5;
+    border-radius: 15px;
+    margin: 10px;
+    padding: 20px 15px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    background: #f5f5f5;
+    border-radius: 20px;
+    margin: 20px;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    display: grid;
+    grid-template-columns: 300px 1fr;
     gap: 20px;
+  }
+  
+  @media (min-width: 1025px) {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
   }
 `;
 
@@ -23,12 +61,30 @@ const LeftColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const RightColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  
+  @media (max-width: 480px) {
+    margin: 0 10px;
+    gap: 15px;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    margin: 0 20px;
+    gap: 18px;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    gap: 15px;
+  }
 `;
 
 const ProfileHeader = styled.div`
@@ -37,6 +93,18 @@ const ProfileHeader = styled.div`
   padding: 30px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    padding: 20px;
+    margin-bottom: 15px;
+  }
 `;
 
 const BioContainer = styled.div`
@@ -45,6 +113,15 @@ const BioContainer = styled.div`
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
 `;
 
 const BioTitle = styled.h3`
@@ -77,6 +154,26 @@ const Avatar = styled.img`
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid #e0e0e0;
+  
+  @media (max-width: 480px) {
+    width: 80px;
+    height: 80px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    width: 100px;
+    height: 100px;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    width: 100px;
+    height: 100px;
+    border: 3px solid #e0e0e0;
+  }
 `;
 
 const EditAvatarButton = styled.button`
@@ -109,6 +206,21 @@ const UserName = styled.h1`
   font-size: 28px;
   font-weight: 700;
   color: #333;
+  
+  @media (max-width: 480px) {
+    font-size: 20px;
+    margin: 10px 0 5px 0;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    font-size: 24px;
+    margin: 15px 0 5px 0;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    font-size: 24px;
+    margin: 10px 0 5px 0;
+  }
 `;
 
 const Username = styled.p`
@@ -116,6 +228,15 @@ const Username = styled.p`
   font-size: 16px;
   color: #666;
   font-weight: 500;
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+    margin: 0 0 8px 0;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    font-size: 15px;
+  }
 `;
 
 const Bio = styled.p`
@@ -123,12 +244,25 @@ const Bio = styled.p`
   font-size: 16px;
   color: #555;
   line-height: 1.5;
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    font-size: 14px;
+    margin: 0 0 10px 0;
+  }
 `;
 
 const JoinDate = styled.p`
   margin: 0;
   font-size: 14px;
   color: #888;
+  
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    font-size: 13px;
+  }
 `;
 
 const ActionButtons = styled.div`
@@ -154,6 +288,29 @@ const EditButton = styled.button`
   &:hover {
     background: #e0e0e0;
   }
+  
+  @media (max-width: 480px) {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
 `;
 
 const StatsContainer = styled.div`
@@ -161,6 +318,21 @@ const StatsContainer = styled.div`
   gap: 20px;
   justify-content: center;
   margin: 10px 0;
+  
+  @media (max-width: 480px) {
+    gap: 30px;
+    margin: 15px 0;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    gap: 40px;
+    margin: 20px 0;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    gap: 25px;
+    margin: 15px 0;
+  }
 `;
 
 const StatItem = styled(Link)`
@@ -180,12 +352,30 @@ const StatNumber = styled.span`
   font-size: 20px;
   font-weight: 700;
   color: #333;
+  
+  @media (max-width: 480px) {
+    font-size: 18px;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    font-size: 19px;
+  }
 `;
 
 const StatLabel = styled.span`
   font-size: 14px;
   color: #666;
   margin-top: 5px;
+  
+  @media (max-width: 480px) {
+    font-size: 12px;
+    margin-top: 3px;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    font-size: 13px;
+    margin-top: 4px;
+  }
 `;
 
 const PostsSection = styled.div`
@@ -193,6 +383,22 @@ const PostsSection = styled.div`
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 480px) {
+    border-radius: 15px 15px 0 0;
+    margin: 15px 0 0 0;
+    padding: 15px;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    border-radius: 20px 20px 0 0;
+    margin: 20px 0 0 0;
+    padding: 20px;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    padding: 15px;
+  }
 `;
 
 const PostsGrid = styled.div`
@@ -200,6 +406,22 @@ const PostsGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
   margin-top: 20px;
+  
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin-top: 15px;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -210,6 +432,22 @@ const SectionTitle = styled.h2`
   display: flex;
   align-items: center;
   gap: 10px;
+  
+  @media (max-width: 480px) {
+    font-size: 16px;
+    margin: 0 0 15px 0;
+    gap: 8px;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    font-size: 18px;
+    margin: 0 0 18px 0;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    font-size: 18px;
+    margin: 0 0 15px 0;
+  }
 `;
 
 const PostCard = styled.div`
@@ -223,6 +461,18 @@ const PostCard = styled.div`
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   }
+  
+  @media (max-width: 768px) {
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
 `;
 
 const PostImage = styled.img`
@@ -231,6 +481,23 @@ const PostImage = styled.img`
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 12px;
+  
+  @media (max-width: 480px) {
+    height: 100px;
+    border-radius: 0;
+    margin-bottom: 0;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    height: 120px;
+    border-radius: 0;
+    margin-bottom: 0;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    height: 160px;
+    margin-bottom: 10px;
+  }
 `;
 
 const PostContent = styled.p`
@@ -243,6 +510,10 @@ const PostContent = styled.p`
   -webkit-line-clamp: 6;
   -webkit-box-orient: vertical;
   flex: 1;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const PostDate = styled.span`
@@ -250,6 +521,10 @@ const PostDate = styled.span`
   color: #666;
   font-style: italic;
   margin-top: 10px;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const LoadingSpinner = styled.div`
@@ -274,6 +549,20 @@ const EmptyState = styled.div`
   text-align: center;
   padding: 40px 20px;
   color: #666;
+  
+  @media (max-width: 480px) {
+    padding: 30px 15px;
+    font-size: 14px;
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    padding: 35px 18px;
+    font-size: 15px;
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    padding: 35px 20px;
+  }
 `;
 
 const Profile = () => {
@@ -420,62 +709,113 @@ const Profile = () => {
   
   return (
     <Container>
-      <LeftColumn>
-        <ProfileHeader>
-          <ProfileInfo>
-            <AvatarContainer>
-              <Avatar 
-                src={imageError ? '/default-avatar.svg' : (user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg')}
-                alt={user.name}
-                onLoad={() => setImageLoading(false)}
-                onError={(e) => {
-                  setImageError(true);
-                  setImageLoading(false);
-                  e.target.src = '/default-avatar.svg';
-                }}
-                style={{ opacity: imageLoading ? 0.5 : 1, transition: 'opacity 0.3s ease' }}
-              />
-              {false && (
-                <EditAvatarButton>
-                </EditAvatarButton>
-              )}
-            </AvatarContainer>
-            
-            <UserDetails>
-              <UserName>{user.name}</UserName>
-              <Username>@{user.username}</Username>
-              <JoinDate>Bergabung {formatDate(user.createdAt)}</JoinDate>
-            </UserDetails>
-            
-            <StatsContainer>
-              <StatItem to={`/follow/${user.id}`}>
-                <StatNumber>{followersCount}</StatNumber>
-                <StatLabel>Followers</StatLabel>
-              </StatItem>
-              <StatItem to={`/follow/${user.id}`}>
-                <StatNumber>{followingCount}</StatNumber>
-                <StatLabel>Following</StatLabel>
-              </StatItem>
-            </StatsContainer>
-            
-            <ActionButtons>
-              {isOwnProfile ? (
-                <EditButton onClick={() => navigate('/edit-profil')}>
-                  <FaEdit /> Edit Profil
-                </EditButton>
-              ) : (
-                <FollowButton userId={user.id} onFollowChange={fetchFollowCounts} />
-              )}
-            </ActionButtons>
-          </ProfileInfo>
-        </ProfileHeader>
+      {/* Mobile Layout */}
+      <MobileProfileCard>
+        {/* Desktop Layout - Left Column */}
+        <LeftColumn>
+          <ProfileHeader>
+            <ProfileInfo>
+              <AvatarContainer>
+                <Avatar 
+                  src={imageError ? '/default-avatar.svg' : (user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg')}
+                  alt={user.name}
+                  onLoad={() => setImageLoading(false)}
+                  onError={(e) => {
+                    setImageError(true);
+                    setImageLoading(false);
+                    e.target.src = '/default-avatar.svg';
+                  }}
+                  style={{ opacity: imageLoading ? 0.5 : 1, transition: 'opacity 0.3s ease' }}
+                />
+                {false && (
+                  <EditAvatarButton>
+                  </EditAvatarButton>
+                )}
+              </AvatarContainer>
+              
+              <UserDetails>
+                <UserName>{user.name}</UserName>
+                <Username>@{user.username}</Username>
+                <JoinDate>Bergabung {formatDate(user.createdAt)}</JoinDate>
+              </UserDetails>
+              
+              <StatsContainer>
+                <StatItem to={`/follow/${user.id}`}>
+                  <StatNumber>{followersCount}</StatNumber>
+                  <StatLabel>Followers</StatLabel>
+                </StatItem>
+                <StatItem to={`/follow/${user.id}`}>
+                  <StatNumber>{followingCount}</StatNumber>
+                  <StatLabel>Following</StatLabel>
+                </StatItem>
+              </StatsContainer>
+              
+              <ActionButtons>
+                {isOwnProfile ? (
+                  <EditButton onClick={() => navigate('/edit-profil')}>
+                    <FaEdit /> Edit Profil
+                  </EditButton>
+                ) : (
+                  <FollowButton userId={user.id} onFollowChange={fetchFollowCounts} />
+                )}
+              </ActionButtons>
+            </ProfileInfo>
+          </ProfileHeader>
+          
+          <BioContainer>
+            <BioTitle>Tentang Saya</BioTitle>
+            <Bio>{user.bio || 'Belum ada bio'}</Bio>
+          </BioContainer>
+        </LeftColumn>
         
-        <BioContainer>
-          <BioTitle>Tentang Saya</BioTitle>
-          <Bio>{user.bio || 'Belum ada bio'}</Bio>
-        </BioContainer>
-      </LeftColumn>
+        {/* Mobile Profile Info */}
+        <div className="mobile-profile" style={{ display: 'none' }}>
+          <style jsx>{`
+            @media (max-width: 768px) {
+              .mobile-profile {
+                display: block !important;
+              }
+            }
+          `}</style>
+          
+          <AvatarContainer>
+            <Avatar 
+              src={imageError ? '/default-avatar.svg' : (user.foto_profil ? `http://localhost:5000${user.foto_profil}` : '/default-avatar.svg')}
+              alt={user.name}
+              onLoad={() => setImageLoading(false)}
+              onError={(e) => {
+                setImageError(true);
+                setImageLoading(false);
+                e.target.src = '/default-avatar.svg';
+              }}
+              style={{ opacity: imageLoading ? 0.5 : 1, transition: 'opacity 0.3s ease' }}
+            />
+          </AvatarContainer>
+          
+          <UserName>{user.name}</UserName>
+          
+          <StatsContainer>
+            <StatItem to={`/follow/${user.id}`}>
+              <StatNumber>{followersCount}</StatNumber>
+              <StatLabel>Followers</StatLabel>
+            </StatItem>
+            <StatItem to={`/follow/${user.id}`}>
+              <StatNumber>{followingCount}</StatNumber>
+              <StatLabel>Following</StatLabel>
+            </StatItem>
+          </StatsContainer>
+          
+          {isOwnProfile ? (
+            <EditButton onClick={() => navigate('/edit-profil')}>
+              <FaEdit /> edit profil
+            </EditButton>
+          ) : (
+            <FollowButton userId={user.id} onFollowChange={fetchFollowCounts} />
+          )}
+        </div>
+      </MobileProfileCard>
       
+      {/* Posts Section */}
       <RightColumn>
         <PostsSection>
           <SectionTitle>
