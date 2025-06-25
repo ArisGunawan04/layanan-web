@@ -1,0 +1,1388 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chat-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar-chat {
+  width: 300px; /* Menambah lebar sidebar */
+  border-right: 1px solid #e0e0e0;
+  padding: 20px;
+  background-color: #f8f8f8;
+}
+
+.sidebar-chat h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.sidebar-chat ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-chat li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.sidebar-chat li:hover {
+  background-color: #e9e9e9;
+}
+
+.sidebar-chat li.active {
+  background-color: #dcdcdc;
+}
+
+.sidebar-chat .profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.chat-area {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  position: relative;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f8f8;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.chat-header .profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.chat-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.user-status-container {
+  flex-grow: 1;
+  margin-left: 10px;
+}
+
+.chat-menu-container {
+  position: relative;
+}
+
+.chat-menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: background-color 0.2s;
+}
+
+.chat-menu-button:hover {
+  background-color: #e0e0e0;
+}
+
+.chat-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.menu-item:hover {
+  background-color: #f5f5f5;
+}
+
+.menu-item.view-group-detail {
+  color: #3498db;
+}
+
+.menu-item.delete-chat {
+  color: #e74c3c;
+}
+
+.menu-item.block-user {
+  color: #f39c12;
+}
+
+.messages {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Untuk pesan yang diterima */
+}
+
+.message {
+  max-width: 70%;
+  padding: 0; /* Hapus padding langsung dari .message */
+  margin-bottom: 10px;
+  word-wrap: break-word;
+  display: flex; /* Menggunakan flexbox untuk mengatur konten pesan */
+  flex-direction: column; /* Konten pesan diatur secara vertikal */
+}
+
+.message.sent {
+  align-self: flex-end;
+  align-items: flex-end; /* Mengatur konten pesan yang dikirim ke kanan */
+}
+
+.message.received {
+  align-self: flex-start;
+  align-items: flex-start; /* Mengatur konten pesan yang diterima ke kiri */
+}
+
+.message.sent > p,
+.message.sent .message-with-media {
+  background-color: #00FA04; /* Warna hijau terang */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 15px;
+  max-width: 100%;
+  display: inline-block;
+  margin: 0;
+  text-align: left;
+}
+
+.message.received > p,
+.message.received .message-with-media {
+  background-color: #2A8BF2; /* Warna biru baru */
+  color: white; /* Teks putih untuk kontras */
+  padding: 10px 15px;
+  border-radius: 15px;
+  max-width: 100%;
+  display: inline-block;
+  margin-left: 45px; /* Sesuaikan dengan margin-left message-sender-info */
+}
+
+.message-media {
+  padding: 0;
+  background-color: transparent;
+}
+
+/* Style untuk pesan dengan media (gambar/video) dan teks */
+.message-media {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 15px; /* Terapkan border-radius di sini */
+  overflow: hidden;
+}
+
+/* Hapus border radius dari media jika ada caption */
+.message-media:has(.message-caption) img,
+.message-media:has(.message-caption) video,
+.message-media:has(.message-caption) .document-file {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.message-media img,
+.message-media video,
+.message-media .document-file {
+  display: block;
+  max-width: 100%;
+  border-radius: 0;
+  margin: 0;
+}
+
+.message-media .message-caption {
+  color: white; /* Teks putih */
+  padding: 12px 15px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+  word-break: break-word;
+  text-align: left;
+}
+
+.message-sender-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  margin-left: 45px; /* Sesuaikan dengan lebar foto profil + margin */
+  font-size: 12px;
+  color: #555;
+  font-weight: bold;
+}
+
+.message-sender-info img {
+  width: 32px; /* Ukuran foto profil yang lebih besar */
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+  position: absolute; /* Posisikan absolut */
+  left: 0px; /* Sesuaikan dengan padding kiri pesan */
+  top: 0; /* Sesuaikan posisi vertikal */
+}
+
+.message.received {
+  align-self: flex-start;
+  align-items: flex-start; /* Mengatur konten pesan yang diterima ke kiri */
+  position: relative; /* Diperlukan untuk posisi absolut anak */
+}
+
+.message p {
+  margin: 0;
+}
+
+.message-image {
+  max-width: 250px;
+  max-height: 250px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.message-video {
+  max-width: 150px;
+  max-height: 150px;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.message-input {
+  display: flex;
+  padding: 15px 20px;
+  border-top: 1px solid #e0e0e0;
+  background-color: #f8f8f8;
+}
+
+.message-input input {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.message-input button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.message-input button:hover {
+  background-color: #0056b3;
+}
+
+.no-chat-selected {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  color: #888;
+  font-size: 18px;
+}
+
+.chat-tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.tab-item {
+  padding: 8px 15px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #666;
+  position: relative;
+}
+
+.tab-item.active {
+  color: #4a6cf7;
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #4a6cf7;
+}
+
+main {
+  margin-left: 220px; /* Lebar sidebar */
+}
+
+/* Style untuk status online/offline */
+.user-status-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Menyelaraskan konten ke kiri */
+  margin-left: 10px; 
+}
+
+.user-status {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.status-badge {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.status-online {
+  background-color: #4CAF50; /* Hijau */
+}
+
+.status-offline {
+  background-color: #9e9e9e; /* Abu-abu */
+}
+
+.status-text {
+  color: #666;
+  font-size: 11px;
+  text-align: left;
+}
+
+
+
+/* Style untuk tombol lampiran dan popup */
+.attachment-container {
+  position: relative;
+  margin-right: 10px;
+}
+
+.attachment-button {
+  background-color: #2A8BF2;
+  position: relative;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.attachment-button:hover {
+  background-color: #1a7bd9;
+}
+
+.attachment-button svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.attachment-button:focus {
+  outline: none;
+}
+
+/* Overlay */
+.attachment-popup-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* Popup container */
+.attachment-popup-content {
+  background: white;
+  border-radius: 10px;
+  padding: 24px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Header */
+.attachment-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.attachment-popup-header h3 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.attachment-popup-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Option container */
+.attachment-popup-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Each option block */
+.attachment-popup-option {
+  background-color: #f1f1f1;
+  border-radius: 12px;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column; /* Stack icon and text vertically */
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+  border: 1px solid #e0e0e0;
+}
+
+.attachment-popup-option:hover {
+  background-color: #e0e0e0;
+}
+
+/* Icon styles */
+.attachment-popup-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  font-size: 24px;
+}
+
+/* Text styles */
+.attachment-popup-text {
+  text-align: center;
+}
+
+.attachment-popup-text h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+}
+
+.attachment-popup-text p {
+  display: none; /* Hide description */
+}
+
+
+/* Legacy styles untuk backward compatibility */
+.attachment-menu {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  background-color: transparent;
+  border-radius: 50%;
+  width: 40px;
+  z-index: 10;
+}
+
+.attachment-item {
+  padding: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  background-color: #2A8BF2;
+  color: white;
+  margin-bottom: 5px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  width: 40px;
+  height: 40px;
+}
+
+.attachment-item:hover {
+  background-color: #1a7bd9;
+}
+
+/* Custom Confirmation Modal Styles */
+.custom-confirm-modal-overlay {
+  position: absolute; /* Changed from fixed to absolute */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999; /* Lowered z-index to be below chat-dropdown-menu if needed, but still above chat content */
+}
+
+.custom-confirm-modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.custom-confirm-modal-content p {
+  margin-bottom: 25px;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.custom-confirm-modal-buttons button {
+  background-color: #2A8BF2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  margin: 0 10px;
+  transition: background-color 0.2s ease;
+}
+
+.custom-confirm-modal-buttons button:hover {
+  background-color: #1a7bd9;
+}
+
+.custom-confirm-modal-buttons button:last-child {
+  background-color: #6c757d;
+}
+
+.custom-confirm-modal-buttons button:last-child:hover {
+  background-color: #5a6268;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.message-media {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.message-image {
+  max-width: 150px;
+  max-height: 150px;
+  width: 100%; /* Tambahkan ini */
+  height: auto; /* Tambahkan ini */
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.message-video {
+  max-width: 150px;
+  max-height: 150px;
+  width: 100%; /* Tambahkan ini */
+  height: auto; /* Tambahkan ini */
+  border-radius: 8px;
+  object-fit: cover;
+}
+ 
+.message-caption {
+  margin: 0;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 4px;
+}
+
+/* Styles for file preview before sending */
+.file-preview-container {
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.file-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.file-preview-image {
+  max-width: 100px; /* Ukuran maksimum untuk pratinjau gambar */
+  max-height: 100px;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  object-fit: contain;
+  margin-right: 10px;
+}
+
+.file-preview-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.file-preview-info span {
+  font-weight: bold;
+  color: #333;
+}
+
+.file-preview-info small {
+  color: #666;
+  font-size: 0.8em;
+}
+
+.file-preview-remove-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.2s;
+}
+
+.file-preview-remove-btn:hover {
+  background-color: #e74c3c;
+}
+
+.caption-hint {
+  margin-left: 15px;
+  padding: 8px 12px;
+  background-color: #e3f2fd;
+  border-radius: 15px;
+  border-left: 3px solid #2196f3;
+}
+
+.caption-hint small {
+  color: #1976d2;
+  font-weight: 500;
+  font-size: 0.85em;
+}
+
+/* Styling untuk pesan dengan media dan caption */
+.message-with-media {
+  display: flex;
+  flex-direction: column;
+  max-width: 250px;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.message-caption {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.message-caption p {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Styling untuk pesan terkirim */
+.message.sent .message-with-media {
+  background-color: #00FA04;
+  border-radius: 15px;
+  overflow: hidden;
+  padding-bottom: 5px;
+}
+
+.message.sent .message-caption {
+  text-align: right;
+  background-color: #00FA04;
+  padding: 5px 12px 8px 12px;
+  margin: 0;
+}
+
+/* Styling untuk pesan diterima */
+.message.received .message-with-media {
+  background-color: #2A8BF2;
+  border-radius: 15px;
+  overflow: hidden;
+  padding-bottom: 5px;
+}
+
+.message.received .message-caption {
+  text-align: left;
+  background-color: #2A8BF2;
+  padding: 5px 12px 8px 12px;
+  margin: 0;
+}
+
+/* Style untuk media dan gambar */
+.message-media {
+  width: 100%;
+  display: block;
+}
+
+.message-image {
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Style untuk teks caption */
+.message.sent .message-caption p,
+.message.received .message-caption p {
+  color: #fff;
+  display: block;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  line-height: 1.5;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  margin-left: -10px; /* Menggeser teks lebih ke kiri */
+}
+
+/* Media Preview Modal Styles */
+.media-preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9); /* Lebih gelap untuk fokus pada media */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001; /* Pastikan di atas semua elemen lain */
+}
+
+.media-preview-content {
+  position: relative;
+  background: transparent; /* Tidak ada latar belakang untuk konten */
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  max-width: 90%; /* Batasi lebar maksimum */
+  max-height: 90%; /* Batasi tinggi maksimum */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.media-preview-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.3); /* Tombol close transparan */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1002; /* Di atas media */
+  transition: background-color 0.2s;
+}
+
+.media-preview-close:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.media-preview-item {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Pastikan media terlihat penuh tanpa terpotong */
+  border-radius: 8px; /* Sudut sedikit membulat */
+}
+
+.video-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.video-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  pointer-events: none; /* Agar klik bisa tembus ke video */
+}
+
+.media-error {
+  color: red;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 5px;
+}
+
+.send-button {
+  background-color: #2A8BF2;
+  width: 43px;
+  height: 43px;
+  min-width: 43px;
+  min-height: 43px;
+  border: none;
+  border-radius: 50% !important; /* Mengubah border-radius menjadi 50% untuk bentuk bulat sempurna dan memastikan tidak ditimpa */
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Memastikan konten yang meluap dipotong */
+  box-sizing: border-box;
+  flex-shrink: 0;
+  position: relative; /* Menambahkan posisi relatif untuk penempatan SVG yang benar */
+  border: none !important; /* Memastikan tidak ada border yang memengaruhi bentuk */
+  outline: none !important; /* Memastikan tidak ada outline yang memengaruhi bentuk */
+}
+
+.send-button:hover {
+  background-color: #1a7bd9;
+}
+
+.send-button svg {
+  display: block;
+  width: 20px; /* Mengurangi ukuran SVG */
+  height: 20px; /* Mengurangi ukuran SVG */
+  flex-shrink: 0; /* Memastikan SVG tidak menyusut */
+  padding: 0; /* Menghilangkan padding pada SVG */
+  margin: 0; /* Menghilangkan margin pada SVG */
+  position: absolute; /* Memposisikan secara absolut */
+  top: 50%; /* Memusatkan secara vertikal */
+  left: 50%; /* Memusatkan secara horizontal */
+  transform: translate(-50%, -50%); /* Menyesuaikan posisi untuk pemusatan sempurna */
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .chat-container {
+    flex-direction: column;
+    height: calc(100vh - 60px); /* Adjust for mobile navigation */
+  }
+
+  .sidebar-chat {
+    width: 100%;
+    height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 15px;
+    overflow-y: auto;
+  }
+
+  .sidebar-chat.hidden-mobile {
+    display: none;
+  }
+
+  .chat-area {
+    height: 60vh;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .chat-area.full-width-mobile {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+  }
+
+  .chat-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #f8f8f8;
+    padding: 10px 15px;
+    min-height: 60px;
+    flex-wrap: nowrap;
+    border-bottom: 1px solid #e0e0e0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .back-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 10px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+  }
+
+  .back-button:hover {
+    background-color: #f0f0f0;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none;
+  }
+
+  .chat-header {
+    padding: 10px 15px;
+    min-height: 60px;
+    flex-wrap: nowrap;
+  }
+
+  .chat-header .profile-pic {
+    width: 35px;
+    height: 35px;
+    flex-shrink: 0;
+  }
+
+  .chat-header h3 {
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+  }
+
+  .user-status-container {
+    margin-left: 8px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .status-text {
+    font-size: 10px;
+  }
+
+  .messages {
+    padding: 15px;
+    height: calc(60vh - 120px); /* Adjust for header and input */
+  }
+
+  .message {
+    max-width: 85%;
+    margin-bottom: 8px;
+  }
+
+  .message.sent > p,
+  .message.sent .message-with-media {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .message.received > p,
+  .message.received .message-with-media {
+    padding: 8px 12px;
+    font-size: 14px;
+    margin-left: 35px;
+  }
+
+  .message-sender-info {
+    margin-left: 35px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+
+  .message-sender-info span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+
+  .message-sender-info img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .message-image {
+    max-width: 200px;
+    max-height: 200px;
+  }
+
+  .message-video {
+    max-width: 120px;
+    max-height: 120px;
+  }
+
+  .message-input {
+    padding: 10px 15px;
+    gap: 8px;
+  }
+
+  .message-input input {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 18px;
+  }
+
+  .attachment-button {
+    width: 35px;
+    height: 35px;
+  }
+
+  .send-button {
+    width: 35px;
+    height: 35px;
+    min-width: 35px;
+    min-height: 35px;
+  }
+
+  .send-button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .sidebar-chat .profile-pic {
+    width: 35px;
+    height: 35px;
+  }
+
+  .sidebar-chat li {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  .sidebar-chat h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .chat-tabs {
+    margin-bottom: 15px;
+  }
+
+  .tab-item {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+
+  .attachment-popup-content {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .attachment-popup-option {
+    padding: 30px 20px;
+  }
+
+  .file-preview-container {
+    padding: 8px 15px;
+  }
+
+  .file-preview-image {
+    max-width: 80px;
+    max-height: 80px;
+  }
+
+  .media-preview-content {
+    max-width: 95%;
+    max-height: 95%;
+  }
+
+  .chat-dropdown-menu {
+    right: 10px;
+    min-width: 140px;
+  }
+
+  .menu-item {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .no-chat-selected {
+    font-size: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-container {
+    height: calc(100vh - 50px);
+  }
+
+  .sidebar-chat {
+    height: 35vh;
+    padding: 10px;
+  }
+
+  .chat-area {
+    height: 65vh;
+  }
+
+  .chat-header {
+    padding: 8px 12px;
+    min-height: 50px;
+    flex-wrap: nowrap;
+  }
+
+  .chat-header h3 {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+
+  .user-status-container {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .messages {
+    padding: 10px;
+    height: calc(65vh - 100px);
+  }
+
+  .message {
+    max-width: 90%;
+  }
+
+  .message.sent > p,
+  .message.sent .message-with-media {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .message.received > p,
+  .message.received .message-with-media {
+    padding: 6px 10px;
+    font-size: 13px;
+    margin-left: 30px;
+  }
+
+  .message-sender-info {
+    margin-left: 30px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .message-sender-info img {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .message-sender-info span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+  }
+
+  .message-image {
+    max-width: 150px;
+    max-height: 150px;
+  }
+
+  .message-video {
+    max-width: 100px;
+    max-height: 100px;
+  }
+
+  .message-input {
+    padding: 8px 12px;
+  }
+
+  .message-input input {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .attachment-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .send-button {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .send-button svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .sidebar-chat .profile-pic {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sidebar-chat h2 {
+    font-size: 16px;
+  }
+
+  .tab-item {
+    padding: 5px 10px;
+    font-size: 13px;
+  }
+
+  .attachment-popup-content {
+    padding: 15px;
+  }
+
+  .attachment-popup-option {
+    padding: 25px 15px;
+  }
+
+  .file-preview-image {
+    max-width: 60px;
+    max-height: 60px;
+  }
+}
