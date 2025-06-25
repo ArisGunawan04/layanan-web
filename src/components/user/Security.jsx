@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaTimes, FaSave, FaUser } from 'react-icons/fa';
+import { FaTimes, FaSave, FaUser, FaShieldAlt } from 'react-icons/fa';
 import axios from 'axios';
 
 // Styled Components
@@ -31,18 +31,21 @@ const MainContent = styled.div`
 
 const SettingsSidebar = styled.div`
   width: 200px;
-  background: #f8f9fa;
+  background: white;
   padding: 20px 0 20px 20px;
   min-height: calc(100vh - 40px);
   overflow-y: auto;
   position: sticky;
   top: 0;
+  border-right: 1px solid #e0e0e0;
   
   @media (max-width: 768px) {
     width: 100%;
     padding: 15px;
     min-height: auto;
     position: relative;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
   }
 `;
 
@@ -51,16 +54,30 @@ const SidebarTitle = styled.h3`
   color: #333;
   font-size: 16px;
   font-weight: 600;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const MenuList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
 `;
 
 const MenuItem = styled.li`
   margin-bottom: 10px;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 0;
+  }
 `;
 
 const MenuLink = styled.button`
@@ -70,14 +87,25 @@ const MenuLink = styled.button`
   color: ${props => props.$active ? 'white' : '#666'};
   border: none;
   padding: 12px 16px;
-  border-radius: 6px;
+  border-radius: 25px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   
   &:hover {
     background: ${props => props.$active ? '#1a7bd9' : '#e9ecef'};
     color: ${props => props.$active ? 'white' : '#333'};
+  }
+  
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    min-width: 100px;
+    justify-content: center;
   }
 `;
 
@@ -92,6 +120,16 @@ const SecuritySection = styled.div`
   border-radius: 12px;
   background: #fafafa;
   width: 100%;
+  
+  @media (max-width: 768px) {
+    padding: 20px;
+    gap: 40px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 15px;
+    gap: 30px;
+  }
 `;
 
 const Header = styled.div`
@@ -101,6 +139,17 @@ const Header = styled.div`
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 2px solid #2A8BF2;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
 `;
 
 const Title = styled.h2`
@@ -111,6 +160,15 @@ const Title = styled.h2`
   gap: 10px;
   font-size: 24px;
   font-weight: 600;
+  
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 18px;
+    gap: 8px;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -127,6 +185,18 @@ const CloseButton = styled.button`
     background: #f8f9fa;
     color: #333;
   }
+  
+  @media (max-width: 768px) {
+    font-size: 18px;
+    padding: 6px;
+  }
+  
+  @media (max-width: 480px) {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 16px;
+  }
 `;
 
 const Form = styled.form`
@@ -136,6 +206,14 @@ const Form = styled.form`
   width: 100%;
   max-width: 600px; /* Lebar maksimum form input */
   margin: 0 auto; /* Posisi tengah */
+  
+  @media (max-width: 768px) {
+    gap: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 15px;
+  }
 `;
 
 const FormSection = styled.div`
@@ -146,6 +224,16 @@ const FormSection = styled.div`
   width: 100%;
   max-width: 800px; /* Lebar maksimum form section */
   margin: 0 auto; /* Posisi tengah */
+  
+  @media (max-width: 768px) {
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 15px;
+    border-radius: 6px;
+  }
 `;
 
 const SectionTitle = styled.h3`
@@ -153,11 +241,25 @@ const SectionTitle = styled.h3`
   font-weight: 600;
   color: #333;
   margin-bottom: 16px;
+  
+  @media (max-width: 768px) {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
 `;
 
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
+  
+  @media (max-width: 480px) {
+    margin-bottom: 5px;
+  }
 `;
 
 const Label = styled.label`
@@ -165,6 +267,16 @@ const Label = styled.label`
   margin-bottom: 6px;
   color: #555;
   font-size: 14px;
+  
+  @media (max-width: 768px) {
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
 `;
 
 const Input = styled.input`
@@ -180,6 +292,18 @@ const Input = styled.input`
     border-color: #007bff;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
   }
+  
+  @media (max-width: 768px) {
+    padding: 10px 14px;
+    font-size: 13px;
+    border-radius: 5px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+  }
 `;
 
 const ButtonGroup = styled.div`
@@ -189,12 +313,25 @@ const ButtonGroup = styled.div`
   margin-top: 30px;
   padding-top: 15px;
   border-top: 1px solid #eee;
+  
+  @media (max-width: 768px) {
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 10px;
+  }
 `;
 
 const Button = styled.button`
   padding: 10px 20px;
   border: none;
-  border-radius: 6px;
+  border-radius: 25px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -203,6 +340,21 @@ const Button = styled.button`
   gap: 8px;
   transition: all 0.2s ease;
   min-width: 100px;
+  justify-content: center;
+  
+  @media (max-width: 768px) {
+    padding: 8px 16px;
+    font-size: 13px;
+    min-width: 80px;
+    border-radius: 20px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 16px;
+    font-size: 12px;
+    min-width: 100%;
+    border-radius: 18px;
+  }
 `;
 
 const SaveButton = styled(Button)`
@@ -232,12 +384,44 @@ const ErrorMessage = styled.div`
   color: #dc3545;
   font-size: 14px;
   margin-top: 5px;
+  padding: 10px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  
+  @media (max-width: 768px) {
+    font-size: 13px;
+    padding: 8px;
+    margin-top: 4px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 6px;
+    margin-top: 3px;
+  }
 `;
 
 const SuccessMessage = styled.div`
   color: #28a745;
   font-size: 14px;
   margin-top: 5px;
+  padding: 10px;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  
+  @media (max-width: 768px) {
+    font-size: 13px;
+    padding: 8px;
+    margin-top: 4px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 6px;
+    margin-top: 3px;
+  }
 `;
 
 const Security = () => {
@@ -357,12 +541,12 @@ const Security = () => {
         <MenuList>
           <MenuItem>
               <MenuLink onClick={() => navigate('/edit-profil')}>
-                Edit Profil
+                <FaUser /> Edit Profil
               </MenuLink>
             </MenuItem>
             <MenuItem>
               <MenuLink $active={true}>
-                Keamanan
+                <FaShieldAlt /> Keamanan
               </MenuLink>
             </MenuItem>
         </MenuList>
@@ -371,7 +555,7 @@ const Security = () => {
       <MainContent>
         <Header>
           <Title>
-            <FaUser /> Keamanan
+            <FaShieldAlt /> Keamanan
           </Title>
           <CloseButton onClick={handleCancel}>
             <FaTimes />
